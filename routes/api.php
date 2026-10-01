@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\BusinessController;
 use App\Http\Controllers\Api\V1\BusinessMediaController;
 use App\Http\Controllers\Api\V1\BusinessMemberController;
 use App\Http\Controllers\Api\V1\BusinessPostController;
+use App\Http\Controllers\Api\V1\FeedController;
 use App\Http\Controllers\Api\V1\MetaController;
 use App\Http\Controllers\Api\V1\MyBusinessController;
 use App\Http\Controllers\Api\V1\MyPostController;
@@ -55,6 +56,7 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/me', [AccountController::class, 'show']);
         Route::patch('/me', [AccountController::class, 'update']);
         Route::get('/me/posts', [MyPostController::class, 'index']);
+        Route::get('/feed', [FeedController::class, 'index']);
         Route::get('/me/profile', [ProfileController::class, 'show']);
         Route::patch('/me/profile', [ProfileController::class, 'update']);
         Route::post('/me/onboarding/complete', [OnboardingController::class, 'complete']);

@@ -65,6 +65,14 @@ Posts use one polymorphic publishing model for authenticated users and active bu
 | GET | `/api/v1/users/{user}/posts` | Public | List published posts by user |
 | GET | `/api/v1/businesses/{slug}/posts` | Public | List published posts by active business |
 
+### Feed
+
+The Phase 1 feed is an authenticated global chronological discovery feed over eligible published posts. It is not follow-based or ranked yet. It uses cursor pagination with a default page size of 20 and a maximum of 50.
+
+| Method | Endpoint | Authentication | Purpose |
+| --- | --- | --- | --- |
+| GET | `/api/v1/feed?per_page=20&cursor=...` | Active authenticated user | List published user and active-business posts ordered by `published_at` then `id` descending |
+
 ---
 
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
