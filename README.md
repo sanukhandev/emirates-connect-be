@@ -75,6 +75,15 @@ Comments use one polymorphic `comments` table for user and business publishing i
 | POST | `/api/v1/comments/{comment}/replies` | Active authenticated user | Create one-level reply |
 | PATCH/DELETE | `/api/v1/comments/{comment}` | Comment author or current business owner/admin/editor | Edit or soft-delete a comment |
 
+### Reactions
+
+Active authenticated human users can set, switch, or remove one reaction on a visible post, comment, or reply. Supported types are `like`, `celebrate`, `support`, and `insightful`; post and comment resources expose stable counts plus the current user's reaction. Business identities cannot react, and reactions do not affect feed ranking or notifications.
+
+| Method | Endpoint | Authentication | Purpose |
+| --- | --- | --- | --- |
+| PUT/DELETE | `/api/v1/posts/{post}/reaction` | Active authenticated user | Set/switch or remove the current user's reaction on a visible post |
+| PUT/DELETE | `/api/v1/comments/{comment}/reaction` | Active authenticated user | Set/switch or remove the current user's reaction on a visible comment or reply |
+
 ### Feed
 
 The Phase 1 feed is an authenticated global chronological discovery feed over eligible published posts. It is not follow-based or ranked yet. It uses cursor pagination with a default page size of 20 and a maximum of 50.

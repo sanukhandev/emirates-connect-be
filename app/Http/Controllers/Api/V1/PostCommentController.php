@@ -9,6 +9,7 @@ use App\Models\Post;
 use App\Models\User;
 use App\Services\CommentService;
 use App\Services\PostVisibility;
+use App\Support\ReactionSummary;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Http\JsonResponse;
 
@@ -23,10 +24,15 @@ class PostCommentController extends Controller
             ->with([
                 'author' => fn (MorphTo $morphTo) => $morphTo->morphWith([User::class => ['profile']]),
                 'replies.author' => fn (MorphTo $morphTo) => $morphTo->morphWith([User::class => ['profile']]),
+                'replies' => function ($query): void {
+                    ReactionSummary::apply($query);
+                },
             ])
             ->withCount(['replies' => fn ($query) => $query->whereNull('deleted_at')])
-            ->oldest('created_at')->oldest('id')
-            ->paginate(20);
+            ->oldest('created_at')->oldest('id');
+
+        ReactionSummary::apply($comments);
+        $comments = $comments->paginate(20);
 
         return CommentResource::collection($comments);
     }

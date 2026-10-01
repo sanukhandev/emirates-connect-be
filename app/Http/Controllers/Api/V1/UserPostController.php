@@ -6,6 +6,7 @@ use App\Enums\PostStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PostResource;
 use App\Models\User;
+use App\Support\ReactionSummary;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -15,11 +16,12 @@ class UserPostController extends Controller
     {
         abort_if($user->account_status?->blocksAccess(), Response::HTTP_NOT_FOUND);
 
-        return PostResource::collection($user->posts()
+        $query = $user->posts()
             ->where('status', PostStatus::PUBLISHED)
             ->with(['author.profile', 'media'])
             ->latest('published_at')
-            ->latest('id')
-            ->paginate(20));
+            ->latest('id');
+
+        return PostResource::collection(ReactionSummary::apply($query)->paginate(20));
     }
 }

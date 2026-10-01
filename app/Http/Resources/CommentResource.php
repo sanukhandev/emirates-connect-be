@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Support\ReactionSummary;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -17,6 +18,7 @@ class CommentResource extends JsonResource
             'updated_at' => $this->updated_at?->toISOString(),
             'replies_count' => $this->when(isset($this->replies_count), (int) $this->replies_count),
             'replies' => CommentResource::collection($this->whenLoaded('replies')),
+            'reactions' => ReactionSummary::toArray($this->resource),
         ];
     }
 }

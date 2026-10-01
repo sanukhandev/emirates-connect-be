@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Models\Business;
+use App\Models\Comment;
+use App\Models\Post;
 use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -26,7 +28,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Relation::enforceMorphMap(['user' => User::class, 'business' => Business::class]);
+        Relation::enforceMorphMap(['user' => User::class, 'business' => Business::class, 'post' => Post::class, 'comment' => Comment::class]);
 
         RateLimiter::for('auth-login', function (Request $request): Limit {
             return Limit::perMinute(5)->by($this->identityKey($request));

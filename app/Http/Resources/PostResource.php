@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Support\ReactionSummary;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -18,6 +19,7 @@ class PostResource extends JsonResource
             'updated_at' => $this->updated_at?->toISOString(),
             'author' => PostAuthorResource::make($this->author),
             'media' => PostMediaResource::collection($this->whenLoaded('media')),
+            'reactions' => ReactionSummary::toArray($this->resource),
         ];
     }
 }

@@ -8,6 +8,7 @@ use App\Enums\UserStatus;
 use App\Models\Business;
 use App\Models\Post;
 use App\Models\User;
+use App\Support\ReactionSummary;
 use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Validation\ValidationException;
@@ -20,7 +21,7 @@ class FeedService
             throw ValidationException::withMessages(['cursor' => 'The cursor is invalid.']);
         }
 
-        return Post::query()
+        $query = Post::query()
             ->where('status', PostStatus::PUBLISHED)
             ->whereNotNull('published_at')
             ->where(function ($query): void {
@@ -39,8 +40,9 @@ class FeedService
                 'media',
             ])
             ->orderByDesc('published_at')
-            ->orderByDesc('id')
-            ->cursorPaginate($perPage, ['*'], 'cursor', $cursor);
+            ->orderByDesc('id');
+
+        return ReactionSummary::apply($query)->cursorPaginate($perPage, ['*'], 'cursor', $cursor);
     }
 
     private function isValidCursor(string $encoded): bool

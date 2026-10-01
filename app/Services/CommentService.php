@@ -6,6 +6,7 @@ use App\Models\Business;
 use App\Models\Comment;
 use App\Models\Post;
 use App\Models\User;
+use App\Support\ReactionSummary;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
@@ -56,7 +57,11 @@ class CommentService
     private function load(Comment $comment): Comment
     {
         $comment->load(['author', 'replies.author'])->loadMorph('author', [User::class => ['profile']]);
-        $comment->replies->each(fn ($reply) => $reply->loadMorph('author', [User::class => ['profile']]));
+        ReactionSummary::load($comment);
+        $comment->replies->each(function (Comment $reply): void {
+            $reply->loadMorph('author', [User::class => ['profile']]);
+            ReactionSummary::load($reply);
+        });
 
         return $comment;
     }
