@@ -48,8 +48,8 @@ Businesses are professional pages operated by authenticated users through `owner
 | GET | `/api/v1/me/businesses` | Active authenticated user | List the user's businesses and current roles |
 | GET/POST | `/api/v1/businesses/{slug}/members` | Owner or admin | List or add business members |
 | PATCH/DELETE | `/api/v1/businesses/{slug}/members/{member}` | Role-authorized member manager | Change a role or remove a non-owner member |
-| POST/DELETE | `/api/v1/businesses/{slug}/logo` | Owner or admin / owner | Replace or remove the business logo |
-| POST/DELETE | `/api/v1/businesses/{slug}/cover-image` | Owner or admin / owner | Replace or remove the business cover image |
+| POST/DELETE | `/api/v1/businesses/{slug}/logo` | Owner or admin | Replace or remove the business logo |
+| POST/DELETE | `/api/v1/businesses/{slug}/cover-image` | Owner or admin | Replace or remove the business cover image |
 
 ---
 
