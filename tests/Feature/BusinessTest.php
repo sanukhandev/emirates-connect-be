@@ -81,6 +81,8 @@ class BusinessTest extends TestCase
 
         $business->update(['status' => BusinessStatus::INACTIVE]);
         $this->getJson('/api/v1/businesses/'.$business->slug)->assertNotFound();
+        $business->update(['status' => BusinessStatus::SUSPENDED]);
+        $this->getJson('/api/v1/businesses/'.$business->slug)->assertNotFound();
     }
 
     public function test_only_owner_and_admin_can_update_and_editor_cannot(): void
