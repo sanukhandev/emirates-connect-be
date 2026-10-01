@@ -2,8 +2,7 @@
 
 namespace App\Models;
 
-use App\Enums\PostStatus;
-use Database\Factories\PostFactory;
+use Database\Factories\CommentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,20 +10,20 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Post extends Model
+class Comment extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected static function newFactory(): PostFactory
+    protected static function newFactory(): CommentFactory
     {
-        return PostFactory::new();
+        return CommentFactory::new();
     }
 
-    protected $fillable = ['author_type', 'author_id', 'body', 'status', 'published_at', 'created_by'];
+    protected $fillable = ['post_id', 'author_type', 'author_id', 'parent_id', 'body', 'created_by'];
 
-    protected function casts(): array
+    public function post(): BelongsTo
     {
-        return ['status' => PostStatus::class, 'published_at' => 'datetime'];
+        return $this->belongsTo(Post::class);
     }
 
     public function author(): MorphTo
@@ -37,13 +36,13 @@ class Post extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function media(): HasMany
+    public function parent(): BelongsTo
     {
-        return $this->hasMany(PostMedia::class)->orderBy('sort_order');
+        return $this->belongsTo(self::class, 'parent_id');
     }
 
-    public function comments(): HasMany
+    public function replies(): HasMany
     {
-        return $this->hasMany(Comment::class);
+        return $this->hasMany(self::class, 'parent_id')->oldest('created_at')->oldest('id');
     }
 }

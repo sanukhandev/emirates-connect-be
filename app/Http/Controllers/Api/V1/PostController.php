@@ -2,16 +2,14 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Enums\BusinessStatus;
-use App\Enums\PostStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Post\CreatePostRequest;
 use App\Http\Requests\Post\UpdatePostRequest;
 use App\Http\Resources\PostResource;
-use App\Models\Business;
 use App\Models\Post;
 use App\Models\User;
 use App\Services\PostService;
+use App\Services\PostVisibility;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -25,10 +23,10 @@ class PostController extends Controller
         return PostResource::make($post)->response()->setStatusCode(201);
     }
 
-    public function show(Request $request, Post $post): JsonResponse
+    public function show(Request $request, Post $post, PostVisibility $visibility): JsonResponse
     {
         $post->load(['author', 'media'])->loadMorph('author', [User::class => ['profile']]);
-        if ($post->status === PostStatus::PUBLISHED && $this->publiclyVisible($post)) {
+        if ($visibility->isPublic($post)) {
             return PostResource::make($post)->response()->setStatusCode(200);
         }
 
@@ -51,15 +49,5 @@ class PostController extends Controller
         $post->delete();
 
         return response()->noContent();
-    }
-
-    private function publiclyVisible(Post $post): bool
-    {
-        $author = $post->author;
-        if ($author instanceof User) {
-            return ! $author->account_status?->blocksAccess();
-        }
-
-        return $author instanceof Business && $author->status === BusinessStatus::ACTIVE;
     }
 }

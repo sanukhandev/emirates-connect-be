@@ -65,6 +65,16 @@ Posts use one polymorphic publishing model for authenticated users and active bu
 | GET | `/api/v1/users/{user}/posts` | Public | List published posts by user |
 | GET | `/api/v1/businesses/{slug}/posts` | Public | List published posts by active business |
 
+### Comments and replies
+
+Comments use one polymorphic `comments` table for user and business publishing identities. Replies use `parent_id` and are limited to one level; comment bodies are plain text up to 2,000 characters. Public listings expose visible top-level comments with visible replies, ordered oldest first and paginated at 20 per page. Current business membership authorizes business comment edits/deletes, so former members lose access.
+
+| Method | Endpoint | Authentication | Purpose |
+| --- | --- | --- | --- |
+| GET/POST | `/api/v1/posts/{post}/comments` | Public / active authenticated user for POST | List visible comments or create a top-level comment |
+| POST | `/api/v1/comments/{comment}/replies` | Active authenticated user | Create one-level reply |
+| PATCH/DELETE | `/api/v1/comments/{comment}` | Comment author or current business owner/admin/editor | Edit or soft-delete a comment |
+
 ### Feed
 
 The Phase 1 feed is an authenticated global chronological discovery feed over eligible published posts. It is not follow-based or ranked yet. It uses cursor pagination with a default page size of 20 and a maximum of 50.
