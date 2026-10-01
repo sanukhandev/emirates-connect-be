@@ -6,6 +6,8 @@ use App\Enums\UserStatus;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -55,5 +57,20 @@ class User extends Authenticatable implements MustVerifyEmail
     public function profile(): HasOne
     {
         return $this->hasOne(Profile::class);
+    }
+
+    public function businessMemberships(): HasMany
+    {
+        return $this->hasMany(BusinessMember::class);
+    }
+
+    public function businesses(): BelongsToMany
+    {
+        return $this->belongsToMany(Business::class, 'business_members')->withPivot('role')->withTimestamps();
+    }
+
+    public function ownedBusinesses(): HasMany
+    {
+        return $this->hasMany(Business::class, 'created_by');
     }
 }

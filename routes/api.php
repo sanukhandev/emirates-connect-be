@@ -8,7 +8,11 @@ use App\Http\Controllers\Api\V1\Auth\LogoutController;
 use App\Http\Controllers\Api\V1\Auth\MobileTokenController;
 use App\Http\Controllers\Api\V1\Auth\RegisterController;
 use App\Http\Controllers\Api\V1\Auth\ResetPasswordController;
+use App\Http\Controllers\Api\V1\BusinessController;
+use App\Http\Controllers\Api\V1\BusinessMediaController;
+use App\Http\Controllers\Api\V1\BusinessMemberController;
 use App\Http\Controllers\Api\V1\MetaController;
+use App\Http\Controllers\Api\V1\MyBusinessController;
 use App\Http\Controllers\Api\V1\OnboardingController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ProfileMediaController;
@@ -55,6 +59,24 @@ Route::prefix('v1')->group(function (): void {
     });
 
     Route::get('/users/{user}', [UserController::class, 'show']);
+    Route::get('/businesses/{business:slug}', [BusinessController::class, 'show']);
     Route::get('/meta/industries', [MetaController::class, 'industries']);
     Route::get('/meta/emirates', [MetaController::class, 'emirates']);
+
+    Route::middleware(['auth:sanctum', 'active.account'])->group(function (): void {
+        Route::post('/businesses', [BusinessController::class, 'store']);
+        Route::get('/me/businesses', [MyBusinessController::class, 'index']);
+        Route::patch('/businesses/{business:slug}', [BusinessController::class, 'update']);
+        Route::delete('/businesses/{business:slug}', [BusinessController::class, 'destroy']);
+
+        Route::get('/businesses/{business:slug}/members', [BusinessMemberController::class, 'index']);
+        Route::post('/businesses/{business:slug}/members', [BusinessMemberController::class, 'store']);
+        Route::patch('/businesses/{business:slug}/members/{member}', [BusinessMemberController::class, 'update']);
+        Route::delete('/businesses/{business:slug}/members/{member}', [BusinessMemberController::class, 'destroy']);
+
+        Route::post('/businesses/{business:slug}/logo', [BusinessMediaController::class, 'uploadLogo']);
+        Route::delete('/businesses/{business:slug}/logo', [BusinessMediaController::class, 'deleteLogo']);
+        Route::post('/businesses/{business:slug}/cover-image', [BusinessMediaController::class, 'uploadCover']);
+        Route::delete('/businesses/{business:slug}/cover-image', [BusinessMediaController::class, 'deleteCover']);
+    });
 });

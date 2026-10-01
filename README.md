@@ -36,6 +36,21 @@ Start an Angular session with `GET /sanctum/csrf-cookie`, then send credentialed
 | GET | `/api/v1/meta/industries` | Public | List controlled industries |
 | GET | `/api/v1/meta/emirates` | Public | List UAE emirates |
 
+### Business pages and memberships
+
+Businesses are professional pages operated by authenticated users through `owner`, `admin` and `editor` memberships. A business is not an authentication identity. Business slugs are generated at creation and remain stable when the name changes. Public pages expose only active businesses; owners can deactivate a page without deleting its history.
+
+| Method | Endpoint | Authentication | Purpose |
+| --- | --- | --- | --- |
+| POST | `/api/v1/businesses` | Active SPA session or bearer token | Create a business and its owner membership transactionally |
+| GET | `/api/v1/businesses/{slug}` | Public | Read an active public business page |
+| PATCH/DELETE | `/api/v1/businesses/{slug}` | Owner or admin / owner | Update or deactivate a business |
+| GET | `/api/v1/me/businesses` | Active authenticated user | List the user's businesses and current roles |
+| GET/POST | `/api/v1/businesses/{slug}/members` | Owner or admin | List or add business members |
+| PATCH/DELETE | `/api/v1/businesses/{slug}/members/{member}` | Role-authorized member manager | Change a role or remove a non-owner member |
+| POST/DELETE | `/api/v1/businesses/{slug}/logo` | Owner or admin / owner | Replace or remove the business logo |
+| POST/DELETE | `/api/v1/businesses/{slug}/cover-image` | Owner or admin / owner | Replace or remove the business cover image |
+
 ---
 
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
