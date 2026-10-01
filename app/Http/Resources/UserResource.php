@@ -17,6 +17,7 @@ class UserResource extends JsonResource
             'account_status' => $this->account_status?->value,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
+            'profile' => $this->whenLoaded('profile', fn () => ProfileResource::make($this->profile)),
         ];
     }
 }

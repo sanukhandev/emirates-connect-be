@@ -21,6 +21,21 @@ Sanctum uses its recommended hybrid model. Angular is a first-party SPA using th
 
 Start an Angular session with `GET /sanctum/csrf-cookie`, then send credentialed requests with the XSRF cookie/header. Password reset and email verification mail are faked in automated tests; configure the application mailer for local/manual use.
 
+### Profiles and onboarding
+
+`users` stores authentication/account identity; `profiles` stores professional/public identity. A profile is created during registration and backfilled lazily for legacy users. Profile edits and media mutations are limited to the authenticated user, while public profiles omit email and security data.
+
+| Method | Endpoint | Authentication | Purpose |
+| --- | --- | --- | --- |
+| GET | `/api/v1/me/profile` | SPA session or bearer token | Read the current professional profile |
+| PATCH | `/api/v1/me/profile` | SPA session or bearer token | Update profile fields |
+| POST | `/api/v1/me/onboarding/complete` | SPA session or bearer token | Validate and mark onboarding complete |
+| POST/DELETE | `/api/v1/me/profile/avatar` | SPA session or bearer token | Replace/remove avatar metadata and media |
+| POST/DELETE | `/api/v1/me/profile/cover-image` | SPA session or bearer token | Replace/remove cover metadata and media |
+| GET | `/api/v1/users/{user}` | Public | Read a safe public profile |
+| GET | `/api/v1/meta/industries` | Public | List controlled industries |
+| GET | `/api/v1/meta/emirates` | Public | List UAE emirates |
+
 ---
 
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>

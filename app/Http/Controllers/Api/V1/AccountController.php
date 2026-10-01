@@ -5,16 +5,20 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Account\UpdateAccountRequest;
 use App\Http\Resources\UserResource;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class AccountController extends Controller
 {
-    public function show(Request $request): UserResource
+    public function show(Request $request): JsonResponse
     {
-        return UserResource::make($request->user());
+        $user = $request->user();
+        $user->profile()->firstOrCreate(['user_id' => $user->id], ['display_name' => $user->name]);
+
+        return UserResource::make($user->load('profile'))->response()->setStatusCode(200);
     }
 
-    public function update(UpdateAccountRequest $request): UserResource
+    public function update(UpdateAccountRequest $request): JsonResponse
     {
         $user = $request->user();
         $data = $request->validated();
@@ -30,6 +34,8 @@ class AccountController extends Controller
             $user->sendEmailVerificationNotification();
         }
 
-        return UserResource::make($user->refresh());
+        $user->profile()->firstOrCreate(['user_id' => $user->id], ['display_name' => $user->name]);
+
+        return UserResource::make($user->refresh()->load('profile'))->response()->setStatusCode(200);
     }
 }

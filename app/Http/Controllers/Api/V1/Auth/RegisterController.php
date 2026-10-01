@@ -22,6 +22,7 @@ class RegisterController extends Controller
                 'password' => $request->string('password')->toString(),
                 'account_status' => UserStatus::ACTIVE,
             ]);
+            $user->profile()->create(['display_name' => $user->name]);
 
             $user->sendEmailVerificationNotification();
 
