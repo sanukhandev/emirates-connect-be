@@ -51,6 +51,20 @@ Businesses are professional pages operated by authenticated users through `owner
 | POST/DELETE | `/api/v1/businesses/{slug}/logo` | Owner or admin | Replace or remove the business logo |
 | POST/DELETE | `/api/v1/businesses/{slug}/cover-image` | Owner or admin | Replace or remove the business cover image |
 
+### Posts and media
+
+Posts use one polymorphic publishing model for authenticated users and active businesses. User authorship is always resolved from the session; business authorship requires owner, admin or editor membership. Posts support plain text, drafts/published status, and up to four JPEG/PNG/WebP images (8 MB each). Public routes expose published posts only; `/me/posts` includes the current user's drafts.
+
+| Method | Endpoint | Authentication | Purpose |
+| --- | --- | --- | --- |
+| POST | `/api/v1/posts` | Active authenticated user | Create a user or authorized business post, including optional images |
+| GET | `/api/v1/posts/{post}` | Public / authorized draft viewer | Read a visible post |
+| PATCH/DELETE | `/api/v1/posts/{post}` | Owner or authorized business member | Update or soft-delete a post |
+| POST/DELETE | `/api/v1/posts/{post}/media[/{media}]` | Owner or authorized business member | Add or remove post image media |
+| GET | `/api/v1/me/posts` | Active authenticated user | List own published and draft posts |
+| GET | `/api/v1/users/{user}/posts` | Public | List published posts by user |
+| GET | `/api/v1/businesses/{slug}/posts` | Public | List published posts by active business |
+
 ---
 
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>

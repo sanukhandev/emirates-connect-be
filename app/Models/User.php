@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -72,5 +73,10 @@ class User extends Authenticatable implements MustVerifyEmail
     public function ownedBusinesses(): HasMany
     {
         return $this->hasMany(Business::class, 'created_by');
+    }
+
+    public function posts(): MorphMany
+    {
+        return $this->morphMany(Post::class, 'author');
     }
 }

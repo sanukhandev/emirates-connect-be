@@ -11,12 +11,17 @@ use App\Http\Controllers\Api\V1\Auth\ResetPasswordController;
 use App\Http\Controllers\Api\V1\BusinessController;
 use App\Http\Controllers\Api\V1\BusinessMediaController;
 use App\Http\Controllers\Api\V1\BusinessMemberController;
+use App\Http\Controllers\Api\V1\BusinessPostController;
 use App\Http\Controllers\Api\V1\MetaController;
 use App\Http\Controllers\Api\V1\MyBusinessController;
+use App\Http\Controllers\Api\V1\MyPostController;
 use App\Http\Controllers\Api\V1\OnboardingController;
+use App\Http\Controllers\Api\V1\PostController;
+use App\Http\Controllers\Api\V1\PostMediaController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ProfileMediaController;
 use App\Http\Controllers\Api\V1\UserController;
+use App\Http\Controllers\Api\V1\UserPostController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
@@ -49,6 +54,7 @@ Route::prefix('v1')->group(function (): void {
     Route::middleware(['auth:sanctum', 'active.account'])->group(function (): void {
         Route::get('/me', [AccountController::class, 'show']);
         Route::patch('/me', [AccountController::class, 'update']);
+        Route::get('/me/posts', [MyPostController::class, 'index']);
         Route::get('/me/profile', [ProfileController::class, 'show']);
         Route::patch('/me/profile', [ProfileController::class, 'update']);
         Route::post('/me/onboarding/complete', [OnboardingController::class, 'complete']);
@@ -59,12 +65,20 @@ Route::prefix('v1')->group(function (): void {
     });
 
     Route::get('/users/{user}', [UserController::class, 'show']);
+    Route::get('/users/{user}/posts', [UserPostController::class, 'index']);
     Route::get('/businesses/{business:slug}', [BusinessController::class, 'show']);
+    Route::get('/businesses/{business:slug}/posts', [BusinessPostController::class, 'index']);
+    Route::get('/posts/{post}', [PostController::class, 'show']);
     Route::get('/meta/industries', [MetaController::class, 'industries']);
     Route::get('/meta/emirates', [MetaController::class, 'emirates']);
 
     Route::middleware(['auth:sanctum', 'active.account'])->group(function (): void {
         Route::post('/businesses', [BusinessController::class, 'store']);
+        Route::post('/posts', [PostController::class, 'store']);
+        Route::patch('/posts/{post}', [PostController::class, 'update']);
+        Route::delete('/posts/{post}', [PostController::class, 'destroy']);
+        Route::post('/posts/{post}/media', [PostMediaController::class, 'store']);
+        Route::delete('/posts/{post}/media/{media}', [PostMediaController::class, 'destroy']);
         Route::get('/me/businesses', [MyBusinessController::class, 'index']);
         Route::patch('/businesses/{business:slug}', [BusinessController::class, 'update']);
         Route::delete('/businesses/{business:slug}', [BusinessController::class, 'destroy']);

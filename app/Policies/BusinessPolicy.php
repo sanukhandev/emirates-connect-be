@@ -57,6 +57,12 @@ class BusinessPolicy
         return $this->activeManager($user, $business);
     }
 
+    public function publish(User $user, Business $business): bool
+    {
+        return $business->status === BusinessStatus::ACTIVE
+            && in_array($this->role($user, $business), [BusinessRole::OWNER, BusinessRole::ADMIN, BusinessRole::EDITOR], true);
+    }
+
     public function delete(User $user, Business $business): bool
     {
         return $business->status === BusinessStatus::ACTIVE && $this->role($user, $business) === BusinessRole::OWNER;
