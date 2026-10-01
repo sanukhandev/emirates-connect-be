@@ -1,3 +1,27 @@
+## Emirates Connect API
+
+Laravel 12 REST API for Emirates Connect. APIs are versioned under `/api/v1`.
+
+### Authentication
+
+Sanctum personal access bearer tokens are used by Angular and Flutter clients. Register and login return an `api-session` token; send it as `Authorization: Bearer <token>`. Logout revokes only the current token, while a successful password reset revokes all existing tokens.
+
+| Method | Endpoint | Authentication | Purpose |
+| --- | --- | --- | --- |
+| POST | `/api/v1/auth/register` | Public | Create an account |
+| POST | `/api/v1/auth/login` | Public | Authenticate and issue a token |
+| POST | `/api/v1/auth/logout` | Bearer token | Revoke the current token |
+| GET | `/api/v1/me` | Bearer token | Read the current account |
+| PATCH | `/api/v1/me` | Bearer token | Update name or email |
+| POST | `/api/v1/auth/forgot-password` | Public | Request reset instructions |
+| POST | `/api/v1/auth/reset-password` | Public | Set a new password |
+| POST | `/api/v1/auth/email/verification-notification` | Bearer token | Resend verification mail |
+| GET | `/api/v1/auth/verify-email/{id}/{hash}` | Signed URL | Verify an email address |
+
+Password reset and email verification mail are faked in automated tests; configure the application mailer for local/manual use. Bearer-token API requests do not use the SPA cookie/CSRF flow.
+
+---
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">

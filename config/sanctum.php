@@ -37,7 +37,8 @@ return [
     |
     */
 
-    'guard' => ['web'],
+    // EC-002 uses bearer tokens for both Angular and Flutter clients.
+    'guard' => [],
 
     /*
     |--------------------------------------------------------------------------
