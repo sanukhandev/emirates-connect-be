@@ -9,6 +9,7 @@ use App\Http\Requests\Business\CreateBusinessRequest;
 use App\Http\Requests\Business\UpdateBusinessRequest;
 use App\Http\Resources\BusinessResource;
 use App\Models\Business;
+use App\Services\FollowService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -34,11 +35,11 @@ class BusinessController extends Controller
         return BusinessResource::make($business->refresh())->response()->setStatusCode(201);
     }
 
-    public function show(Request $request, Business $business): JsonResponse
+    public function show(Request $request, Business $business, FollowService $service): JsonResponse
     {
         abort_unless($business->status === BusinessStatus::ACTIVE, 404);
 
-        return BusinessResource::make($business)->response()->setStatusCode(200);
+        return BusinessResource::make($service->decorateBusiness($business, $request->user()))->response()->setStatusCode(200);
     }
 
     public function update(UpdateBusinessRequest $request, Business $business): JsonResponse

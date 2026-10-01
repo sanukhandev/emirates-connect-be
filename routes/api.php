@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\V1\Auth\MobileTokenController;
 use App\Http\Controllers\Api\V1\Auth\RegisterController;
 use App\Http\Controllers\Api\V1\Auth\ResetPasswordController;
 use App\Http\Controllers\Api\V1\BusinessController;
+use App\Http\Controllers\Api\V1\BusinessFollowController;
+use App\Http\Controllers\Api\V1\BusinessFollowerController;
 use App\Http\Controllers\Api\V1\BusinessMediaController;
 use App\Http\Controllers\Api\V1\BusinessMemberController;
 use App\Http\Controllers\Api\V1\BusinessPostController;
@@ -27,6 +29,8 @@ use App\Http\Controllers\Api\V1\PostReactionController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ProfileMediaController;
 use App\Http\Controllers\Api\V1\UserController;
+use App\Http\Controllers\Api\V1\UserFollowController;
+use App\Http\Controllers\Api\V1\UserNetworkController;
 use App\Http\Controllers\Api\V1\UserPostController;
 use Illuminate\Support\Facades\Route;
 
@@ -73,8 +77,11 @@ Route::prefix('v1')->group(function (): void {
 
     Route::get('/users/{user}', [UserController::class, 'show']);
     Route::get('/users/{user}/posts', [UserPostController::class, 'index']);
+    Route::get('/users/{user}/followers', [UserNetworkController::class, 'followers']);
+    Route::get('/users/{user}/following', [UserNetworkController::class, 'following']);
     Route::get('/businesses/{business:slug}', [BusinessController::class, 'show']);
     Route::get('/businesses/{business:slug}/posts', [BusinessPostController::class, 'index']);
+    Route::get('/businesses/{business:slug}/followers', [BusinessFollowerController::class, 'index']);
     Route::get('/posts/{post}', [PostController::class, 'show']);
     Route::get('/posts/{post}/comments', [PostCommentController::class, 'index']);
     Route::get('/meta/industries', [MetaController::class, 'industries']);
@@ -95,6 +102,10 @@ Route::prefix('v1')->group(function (): void {
         Route::delete('/posts/{post}/reaction', [PostReactionController::class, 'destroy']);
         Route::put('/comments/{comment}/reaction', [CommentReactionController::class, 'update']);
         Route::delete('/comments/{comment}/reaction', [CommentReactionController::class, 'destroy']);
+        Route::put('/users/{user}/follow', [UserFollowController::class, 'update']);
+        Route::delete('/users/{user}/follow', [UserFollowController::class, 'destroy']);
+        Route::put('/businesses/{business:slug}/follow', [BusinessFollowController::class, 'update']);
+        Route::delete('/businesses/{business:slug}/follow', [BusinessFollowController::class, 'destroy']);
         Route::get('/me/businesses', [MyBusinessController::class, 'index']);
         Route::patch('/businesses/{business:slug}', [BusinessController::class, 'update']);
         Route::delete('/businesses/{business:slug}', [BusinessController::class, 'destroy']);

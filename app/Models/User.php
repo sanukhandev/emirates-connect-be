@@ -84,4 +84,14 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(Reaction::class);
     }
+
+    public function follows(): HasMany
+    {
+        return $this->hasMany(Follow::class, 'follower_user_id');
+    }
+
+    public function followerEdges(): MorphMany
+    {
+        return $this->morphMany(Follow::class, 'followable');
+    }
 }

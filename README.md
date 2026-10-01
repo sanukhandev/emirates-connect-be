@@ -84,6 +84,18 @@ Active authenticated human users can set, switch, or remove one reaction on a vi
 | PUT/DELETE | `/api/v1/posts/{post}/reaction` | Active authenticated user | Set/switch or remove the current user's reaction on a visible post |
 | PUT/DELETE | `/api/v1/comments/{comment}/reaction` | Active authenticated user | Set/switch or remove the current user's reaction on a visible comment or reply |
 
+### Follows
+
+Follows are directional edges from an authenticated human user to a visible user or active business. Repeated follow/unfollow requests are idempotent; businesses cannot be followers, and the feed remains chronological rather than follow-personalized.
+
+| Method | Endpoint | Authentication | Purpose |
+| --- | --- | --- | --- |
+| PUT/DELETE | /api/v1/users/{user}/follow | Active authenticated user | Follow or unfollow a visible user; self-follow is rejected |
+| PUT/DELETE | /api/v1/businesses/{slug}/follow | Active authenticated user | Follow or unfollow an active business |
+| GET | /api/v1/users/{user}/followers | Public | Paginated visible user followers |
+| GET | /api/v1/users/{user}/following | Public | Paginated heterogeneous user/business targets |
+| GET | /api/v1/businesses/{slug}/followers | Public | Paginated visible user followers of an active business |
+
 ### Feed
 
 The Phase 1 feed is an authenticated global chronological discovery feed over eligible published posts. It is not follow-based or ranked yet. It uses cursor pagination with a default page size of 20 and a maximum of 50.

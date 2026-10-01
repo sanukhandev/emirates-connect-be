@@ -18,6 +18,8 @@ class UserResource extends JsonResource
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
             'profile' => $this->whenLoaded('profile', fn () => ProfileResource::make($this->profile)),
+            'followers_count' => $this->when($this->relationLoaded('follow_summary'), fn () => $this->follow_summary['followers_count']),
+            'following_count' => $this->when($this->relationLoaded('follow_summary'), fn () => $this->follow_summary['following_count']),
         ];
     }
 }

@@ -58,4 +58,9 @@ class Business extends Model
     {
         return $this->morphMany(Post::class, 'author');
     }
+
+    public function followerEdges(): MorphMany
+    {
+        return $this->morphMany(Follow::class, 'followable');
+    }
 }
