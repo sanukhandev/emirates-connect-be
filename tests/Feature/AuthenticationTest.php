@@ -19,11 +19,11 @@ class AuthenticationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_registration_normalizes_email_hashes_password_and_returns_a_token(): void
+    public function test_spa_registration_normalizes_email_hashes_password_and_creates_a_session(): void
     {
         Notification::fake();
 
-        $response = $this->postJson('/api/v1/auth/register', [
+        $response = $this->withHeader('Origin', 'http://localhost:4200')->postJson('/api/v1/auth/register', [
             'name' => 'Sanu Khan',
             'email' => '  SANU@example.com ',
             'password' => 'StrongPassword123!',
@@ -33,11 +33,12 @@ class AuthenticationTest extends TestCase
         $response->assertCreated()
             ->assertJsonPath('data.user.email', 'sanu@example.com')
             ->assertJsonPath('data.user.account_status', 'active')
+            ->assertJsonMissingPath('data.token')
             ->assertJsonMissingPath('data.user.password');
 
         $user = User::firstOrFail();
         $this->assertTrue(Hash::check('StrongPassword123!', $user->password));
-        $this->assertNotEmpty($response->json('data.token'));
+        $this->assertAuthenticatedAs($user, 'web');
         Notification::assertSentTo($user, VerifyEmail::class);
     }
 
@@ -54,22 +55,50 @@ class AuthenticationTest extends TestCase
             ->assertJsonValidationErrors(['email', 'password']);
     }
 
-    public function test_login_returns_token_and_rejects_invalid_credentials(): void
+    public function test_spa_login_creates_a_session_without_returning_a_token(): void
     {
         $user = User::factory()->create(['email' => 'sanu@example.com', 'password' => 'StrongPassword123!']);
 
-        $this->postJson('/api/v1/auth/login', [
+        $this->withHeader('Origin', 'http://localhost:4200')->postJson('/api/v1/auth/login', [
             'email' => ' SANU@example.com ',
             'password' => 'StrongPassword123!',
         ])->assertOk()
             ->assertJsonPath('data.user.email', $user->email)
+            ->assertJsonMissingPath('data.token')
             ->assertJsonMissingPath('data.user.password');
 
-        $this->postJson('/api/v1/auth/login', [
+        $this->assertAuthenticatedAs($user, 'web');
+
+        $this->withHeader('Origin', 'http://localhost:4200')->postJson('/api/v1/auth/login', [
             'email' => 'sanu@example.com',
             'password' => 'WrongPassword123!',
         ])->assertUnauthorized()
             ->assertJson(['message' => 'Invalid credentials.']);
+    }
+
+    public function test_mobile_token_endpoint_returns_a_device_named_token(): void
+    {
+        $user = User::factory()->create(['email' => 'sanu@example.com', 'password' => 'StrongPassword123!']);
+
+        $response = $this->postJson('/api/v1/auth/mobile/token', [
+            'email' => ' SANU@example.com ',
+            'password' => 'StrongPassword123!',
+            'device_name' => "Sanu's iPhone",
+        ]);
+
+        $response->assertOk()->assertJsonPath('data.user.email', $user->email);
+        $this->assertNotEmpty($response->json('data.token'));
+        $this->assertDatabaseHas('personal_access_tokens', ['name' => "Sanu's iPhone"]);
+    }
+
+    public function test_mobile_token_requires_a_device_name(): void
+    {
+        User::factory()->create(['email' => 'sanu@example.com', 'password' => 'StrongPassword123!']);
+
+        $this->postJson('/api/v1/auth/mobile/token', [
+            'email' => 'sanu@example.com',
+            'password' => 'StrongPassword123!',
+        ])->assertUnprocessable()->assertJsonValidationErrors(['device_name']);
     }
 
     public function test_login_is_rate_limited(): void
@@ -99,7 +128,13 @@ class AuthenticationTest extends TestCase
             ]);
             $token = $user->createToken('test')->plainTextToken;
 
-            $this->postJson('/api/v1/auth/login', [
+            $this->postJson('/api/v1/auth/mobile/token', [
+                'email' => $user->email,
+                'password' => 'StrongPassword123!',
+                'device_name' => 'test-device',
+            ])->assertForbidden();
+
+            $this->withHeader('Origin', 'http://localhost:4200')->postJson('/api/v1/auth/login', [
                 'email' => $user->email,
                 'password' => 'StrongPassword123!',
             ])->assertForbidden();
@@ -136,6 +171,26 @@ class AuthenticationTest extends TestCase
     {
         $this->getJson('/api/v1/me')->assertUnauthorized();
         $this->patchJson('/api/v1/me', ['name' => 'Nope'])->assertUnauthorized();
+    }
+
+    public function test_spa_session_can_view_the_current_account_and_logout(): void
+    {
+        $user = User::factory()->create(['email' => 'sanu@example.com']);
+
+        $this->withHeader('Origin', 'http://localhost:4200')->postJson('/api/v1/auth/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ])->assertOk();
+
+        $this->assertAuthenticatedAs($user, 'web');
+        $this->withHeader('Origin', 'http://localhost:4200')->getJson('/api/v1/me')->assertOk();
+        $this->withHeader('Origin', 'http://localhost:4200')->postJson('/api/v1/auth/logout')->assertNoContent();
+        $this->assertGuest('web');
+    }
+
+    public function test_csrf_cookie_route_is_available_for_the_spa(): void
+    {
+        $this->get('/sanctum/csrf-cookie')->assertNoContent();
     }
 
     public function test_logout_revokes_only_the_current_token(): void
@@ -176,6 +231,11 @@ class AuthenticationTest extends TestCase
         $oldToken = $user->createToken('api-session')->plainTextToken;
         $resetToken = Password::broker()->createToken($user);
 
+        $this->withHeader('Origin', 'http://localhost:4200')->postJson('/api/v1/auth/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ])->assertOk();
+
         $this->postJson('/api/v1/auth/reset-password', [
             'token' => $resetToken,
             'email' => 'SANU@example.com',
@@ -184,7 +244,9 @@ class AuthenticationTest extends TestCase
         ])->assertOk();
 
         $this->assertTrue(Hash::check('NewStrongPassword123!', $user->fresh()->password));
+        Auth::forgetGuards();
         $this->withToken($oldToken)->getJson('/api/v1/me')->assertUnauthorized();
+        $this->withHeader('Origin', 'http://localhost:4200')->getJson('/api/v1/me')->assertUnauthorized();
     }
 
     public function test_email_verification_notification_and_signed_link_work(): void

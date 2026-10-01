@@ -4,21 +4,22 @@ Laravel 12 REST API for Emirates Connect. APIs are versioned under `/api/v1`.
 
 ### Authentication
 
-Sanctum personal access bearer tokens are used by Angular and Flutter clients. Register and login return an `api-session` token; send it as `Authorization: Bearer <token>`. Logout revokes only the current token, while a successful password reset revokes all existing tokens.
+Sanctum uses its recommended hybrid model. Angular is a first-party SPA using the session cookie and CSRF flow; Flutter uses personal access bearer tokens from the mobile token endpoint. SPA register/login return only the user resource. Mobile tokens are named after the supplied device, logout revokes only the current mobile token, and password reset revokes all mobile tokens and database-backed sessions.
 
 | Method | Endpoint | Authentication | Purpose |
 | --- | --- | --- | --- |
 | POST | `/api/v1/auth/register` | Public | Create an account |
-| POST | `/api/v1/auth/login` | Public | Authenticate and issue a token |
-| POST | `/api/v1/auth/logout` | Bearer token | Revoke the current token |
-| GET | `/api/v1/me` | Bearer token | Read the current account |
-| PATCH | `/api/v1/me` | Bearer token | Update name or email |
+| POST | `/api/v1/auth/login` | SPA session | Authenticate the Angular SPA |
+| POST | `/api/v1/auth/mobile/token` | Public | Issue a device-named Flutter token |
+| POST | `/api/v1/auth/logout` | SPA session or bearer token | End the current authentication context |
+| GET | `/api/v1/me` | SPA session or bearer token | Read the current account |
+| PATCH | `/api/v1/me` | SPA session or bearer token | Update name or email |
 | POST | `/api/v1/auth/forgot-password` | Public | Request reset instructions |
 | POST | `/api/v1/auth/reset-password` | Public | Set a new password |
-| POST | `/api/v1/auth/email/verification-notification` | Bearer token | Resend verification mail |
+| POST | `/api/v1/auth/email/verification-notification` | SPA session or bearer token | Resend verification mail |
 | GET | `/api/v1/auth/verify-email/{id}/{hash}` | Signed URL | Verify an email address |
 
-Password reset and email verification mail are faked in automated tests; configure the application mailer for local/manual use. Bearer-token API requests do not use the SPA cookie/CSRF flow.
+Start an Angular session with `GET /sanctum/csrf-cookie`, then send credentialed requests with the XSRF cookie/header. Password reset and email verification mail are faked in automated tests; configure the application mailer for local/manual use.
 
 ---
 

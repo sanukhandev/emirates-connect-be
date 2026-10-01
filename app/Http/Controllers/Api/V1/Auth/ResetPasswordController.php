@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 
@@ -20,6 +21,12 @@ class ResetPasswordController extends Controller
             ])->save();
 
             $user->tokens()->delete();
+
+            if (config('session.driver') === 'database') {
+                DB::table(config('session.table', 'sessions'))
+                    ->where('user_id', $user->getAuthIdentifier())
+                    ->delete();
+            }
         });
 
         if ($status !== Password::PASSWORD_RESET) {

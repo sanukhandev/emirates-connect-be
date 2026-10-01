@@ -8,6 +8,7 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class RegisterController extends Controller
@@ -27,11 +28,9 @@ class RegisterController extends Controller
             return $user;
         });
 
-        return response()->json([
-            'data' => [
-                'user' => UserResource::make($user),
-                'token' => $user->createToken('api-session')->plainTextToken,
-            ],
-        ], JsonResponse::HTTP_CREATED);
+        Auth::guard('web')->login($user);
+        $request->session()->regenerate();
+
+        return response()->json(['data' => ['user' => UserResource::make($user)]], JsonResponse::HTTP_CREATED);
     }
 }
