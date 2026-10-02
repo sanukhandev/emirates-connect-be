@@ -29,6 +29,7 @@ use App\Http\Controllers\Api\V1\PostMediaController;
 use App\Http\Controllers\Api\V1\PostReactionController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ProfileMediaController;
+use App\Http\Controllers\Api\V1\SearchController;
 use App\Http\Controllers\Api\V1\UserController;
 use App\Http\Controllers\Api\V1\UserFollowController;
 use App\Http\Controllers\Api\V1\UserNetworkController;
@@ -102,6 +103,11 @@ Route::prefix('v1')->group(function (): void {
     Route::get('/posts/{post}/comments', [PostCommentController::class, 'index']);
     Route::get('/meta/industries', [MetaController::class, 'industries']);
     Route::get('/meta/emirates', [MetaController::class, 'emirates']);
+    Route::middleware('throttle:search')->group(function (): void {
+        Route::get('/search', [SearchController::class, 'index']);
+        Route::get('/search/users', [SearchController::class, 'users']);
+        Route::get('/search/businesses', [SearchController::class, 'businesses']);
+    });
 
     Route::middleware(['auth:sanctum', 'active.account'])->group(function (): void {
         Route::post('/businesses', [BusinessController::class, 'store']);

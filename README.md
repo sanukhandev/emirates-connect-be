@@ -104,6 +104,18 @@ The Phase 1 feed is an authenticated global chronological discovery feed over el
 | --- | --- | --- | --- |
 | GET | `/api/v1/feed?per_page=20&cursor=...` | Active authenticated user | List published user and active-business posts ordered by `published_at` then `id` descending |
 
+### Search and discovery
+
+Search is public, MySQL-backed and rate-limited. It covers only visible users/profiles and active businesses; it does not search posts, personalize ranking or expose private verification state. `q` is optional for filter-only discovery, but keyword queries must contain at least two characters. Results use deterministic exact/prefix/contains relevance followed by verified status, name and id, with normal pagination (20 by default, 50 maximum).
+
+| Method | Endpoint | Authentication | Purpose |
+| --- | --- | --- | --- |
+| GET | `/api/v1/search` | Public | Unified user/business search with `type=all\|users\|businesses`, `q`, `industry`, `emirate`, `verified`, `page` and `per_page` |
+| GET | `/api/v1/search/users` | Public | Public professional profile search |
+| GET | `/api/v1/search/businesses` | Public | Active public business search |
+
+Search uses bound queries with escaped LIKE wildcards and a 60 requests/minute throttle. Search results expose only public profile/business fields and `is_verified`; follower state and counts are intentionally omitted to avoid per-result queries.
+
 ---
 
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>

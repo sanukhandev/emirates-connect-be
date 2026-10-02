@@ -41,6 +41,10 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('auth-email-verification', function (Request $request): Limit {
             return Limit::perMinute(3)->by(($request->user()?->getAuthIdentifier() ?? 'guest').'|'.$request->ip());
         });
+
+        RateLimiter::for('search', function (Request $request): Limit {
+            return Limit::perMinute(60)->by(($request->user()?->getAuthIdentifier() ?? 'guest').'|'.$request->ip());
+        });
     }
 
     private function identityKey(Request $request): string
