@@ -19,7 +19,7 @@ class VerificationController extends Controller
 {
     public function index(Request $request)
     {
-        $query = VerificationRequest::query()->with(['subject', 'documents'])->latest('submitted_at')->latest('id');
+        $query = VerificationRequest::query()->with(['subject.profile', 'documents'])->latest('submitted_at')->latest('id');
         if ($request->filled('status')) {
             $query->where('status', $request->string('status'));
         }
@@ -32,7 +32,7 @@ class VerificationController extends Controller
 
     public function show(VerificationRequest $verification): JsonResponse
     {
-        return VerificationRequestResource::make($verification->load(['subject', 'documents', 'auditLogs']))->response();
+        return VerificationRequestResource::make($verification->load(['subject.profile', 'documents', 'auditLogs']))->response();
     }
 
     public function approve(VerificationRequest $verification, Request $request, VerificationService $service): JsonResponse
