@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\ReactionType;
+use App\Events\ReactionCreated;
 use App\Models\Comment;
 use App\Models\Post;
 use App\Models\User;
@@ -13,7 +14,13 @@ class ReactionService
     public function set(User $actor, Post|Comment $target, ReactionType $type): Post|Comment
     {
         $this->ensureInteractable($target);
-        $target->reactions()->updateOrCreate(['user_id' => $actor->id], ['type' => $type]);
+        $reaction = $target->reactions()->where('user_id', $actor->id)->first();
+        if ($reaction === null) {
+            $reaction = $target->reactions()->create(['user_id' => $actor->id, 'type' => $type]);
+            event(new ReactionCreated($reaction));
+        } else {
+            $reaction->update(['type' => $type]);
+        }
 
         return ReactionSummary::load($target);
     }

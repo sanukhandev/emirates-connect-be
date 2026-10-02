@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\BusinessStatus;
 use App\Enums\VerificationStatus;
+use App\Events\VerificationReviewed;
 use App\Models\Business;
 use App\Models\User;
 use App\Models\VerificationAuditLog;
@@ -72,7 +73,7 @@ class VerificationService
 
     public function review(VerificationRequest $request, User $admin, VerificationStatus $status, ?string $reason = null): VerificationRequest
     {
-        return DB::transaction(function () use ($request, $admin, $status, $reason): VerificationRequest {
+        $updated = DB::transaction(function () use ($request, $admin, $status, $reason): VerificationRequest {
             $request = VerificationRequest::query()->with('subject')->lockForUpdate()->findOrFail($request->id);
             if ($request->status !== VerificationStatus::PENDING) {
                 throw new HttpResponseException(response()->json(['message' => 'Only pending requests can be reviewed.'], 409));
@@ -84,6 +85,9 @@ class VerificationService
 
             return $request->fresh(['subject', 'documents', 'auditLogs']);
         });
+        event(new VerificationReviewed($updated));
+
+        return $updated;
     }
 
     private function setSubjectStatus(Model $subject, VerificationStatus $status): void

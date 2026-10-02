@@ -116,6 +116,19 @@ Search is public, MySQL-backed and rate-limited. It covers only visible users/pr
 
 Search uses bound queries with escaped LIKE wildcards and a 60 requests/minute throttle. Search results expose only public profile/business fields and `is_verified`; follower state and counts are intentionally omitted to avoid per-result queries.
 
+### Notifications
+
+Notifications are database-backed, user-targeted and created from successful follow, comment/reply, reaction and verification events. They expose structured actor/subject metadata only; system-admin identity and verification evidence remain private.
+
+| Method | Endpoint | Authentication | Purpose |
+| --- | --- | --- | --- |
+| GET | `/api/v1/notifications` | Active authenticated user | Cursor-paginated notifications; optional `unread=true` |
+| GET | `/api/v1/notifications/unread-count` | Active authenticated user | Count the current user's unread notifications |
+| PATCH | `/api/v1/notifications/{id}/read` | Active authenticated user | Mark one owned notification read |
+| POST | `/api/v1/notifications/read-all` | Active authenticated user | Mark all owned notifications read |
+
+Notification reads are recipient-scoped and ordered newest first. Delivery is synchronous in the MVP, with domain events keeping a future queued listener path open. No push, email, SMS or realtime delivery is included.
+
 ### Reels
 
 Reels use a dedicated two-step lifecycle: create a reel record, then upload one MP4 video to private source storage. The local MVP processing service promotes the validated source to the public playback disk synchronously; the service boundary is ready for queued transcoding and CDN/object storage later. Only `published` reels are public, and public resources expose playback metadata without source or storage paths.

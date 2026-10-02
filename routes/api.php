@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\V1\FeedController;
 use App\Http\Controllers\Api\V1\MetaController;
 use App\Http\Controllers\Api\V1\MyBusinessController;
 use App\Http\Controllers\Api\V1\MyPostController;
+use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\OnboardingController;
 use App\Http\Controllers\Api\V1\PostCommentController;
 use App\Http\Controllers\Api\V1\PostController;
@@ -70,6 +71,10 @@ Route::prefix('v1')->group(function (): void {
         Route::patch('/me', [AccountController::class, 'update']);
         Route::get('/me/posts', [MyPostController::class, 'index']);
         Route::get('/me/reels', [ReelController::class, 'me']);
+        Route::get('/notifications', [NotificationController::class, 'index']);
+        Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
+        Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
+        Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead']);
         Route::get('/feed', [FeedController::class, 'index']);
         Route::get('/me/profile', [ProfileController::class, 'show']);
         Route::patch('/me/profile', [ProfileController::class, 'update']);

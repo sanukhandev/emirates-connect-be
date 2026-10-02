@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\CommentCreated;
 use App\Models\Business;
 use App\Models\Comment;
 use App\Models\Post;
@@ -31,6 +32,7 @@ class CommentService
         $comment->parent()->associate($parent);
         $comment->author()->associate($author);
         $comment->save();
+        event(new CommentCreated($comment));
 
         return $this->load($comment);
     }

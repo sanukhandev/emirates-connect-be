@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\BusinessStatus;
 use App\Enums\UserStatus;
+use App\Events\UserFollowed;
 use App\Models\Business;
 use App\Models\Follow;
 use App\Models\User;
@@ -20,11 +21,16 @@ class FollowService
             throw ValidationException::withMessages(['user' => 'You cannot follow yourself.']);
         }
 
-        return Follow::firstOrCreate([
+        $follow = Follow::firstOrCreate([
             'follower_user_id' => $follower->id,
             'followable_type' => $target->getMorphClass(),
             'followable_id' => $target->getKey(),
         ]);
+        if ($follow->wasRecentlyCreated && $target instanceof User) {
+            event(new UserFollowed($follower, $target, $follow));
+        }
+
+        return $follow;
     }
 
     public function unfollow(User $follower, User|Business $target): void
