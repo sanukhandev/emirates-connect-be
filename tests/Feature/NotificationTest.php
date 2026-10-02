@@ -100,4 +100,25 @@ class NotificationTest extends TestCase
         $response->assertJsonCount(20, 'data')->assertJsonPath('meta.per_page', 20);
         $this->assertNotNull($response->json('meta.next_cursor'));
     }
+
+    public function test_mixed_morphs_deleted_subjects_and_hidden_actors_are_safe(): void
+    {
+        $recipient = User::factory()->create();
+        $actor = User::factory()->create();
+        $business = Business::factory()->create(['created_by' => $actor->id]);
+        $post = Post::factory()->for($actor, 'author')->create(['created_by' => $actor->id]);
+        $comment = Comment::factory()->create(['post_id' => $post->id, 'author_type' => 'user', 'author_id' => $actor->id, 'created_by' => $actor->id]);
+
+        Notification::create(['recipient_user_id' => $recipient->id, 'type' => 'post_commented', 'actor_type' => 'user', 'actor_id' => $actor->id, 'subject_type' => 'post', 'subject_id' => $post->id, 'data' => ['post_id' => $post->id]]);
+        Notification::create(['recipient_user_id' => $recipient->id, 'type' => 'followed', 'actor_type' => 'business', 'actor_id' => $business->id, 'subject_type' => 'business', 'subject_id' => $business->id, 'data' => []]);
+        Notification::create(['recipient_user_id' => $recipient->id, 'type' => 'comment_replied', 'subject_type' => 'comment', 'subject_id' => $comment->id, 'data' => ['comment_id' => $comment->id]]);
+        $post->delete();
+        $actor->update(['account_status' => 'suspended']);
+
+        $response = $this->actingAs($recipient)->getJson('/api/v1/notifications')->assertOk();
+        $this->assertCount(3, $response->json('data'));
+        $this->assertNotNull($response->json('data.1.actor'));
+        $this->assertNull($response->json('data.2.subject'));
+        $this->assertNull($response->json('data.2.actor'));
+    }
 }
