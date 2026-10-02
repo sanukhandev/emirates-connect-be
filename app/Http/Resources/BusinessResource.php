@@ -37,6 +37,7 @@ class BusinessResource extends JsonResource
             'updated_at' => $this->updated_at?->toISOString(),
             'followers_count' => $this->when($this->relationLoaded('follow_summary'), fn () => $this->follow_summary['followers_count']),
             'is_following' => $this->when($this->relationLoaded('follow_summary'), fn () => $this->follow_summary['is_following']),
+            'is_verified' => $this->verification_status?->value === 'approved',
         ];
     }
 }

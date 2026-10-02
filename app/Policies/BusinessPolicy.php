@@ -68,6 +68,11 @@ class BusinessPolicy
         return $business->status === BusinessStatus::ACTIVE && $this->role($user, $business) === BusinessRole::OWNER;
     }
 
+    public function verify(User $user, Business $business): bool
+    {
+        return in_array($this->role($user, $business), [BusinessRole::OWNER, BusinessRole::ADMIN], true);
+    }
+
     private function activeManager(User $user, Business $business): bool
     {
         return $business->status === BusinessStatus::ACTIVE

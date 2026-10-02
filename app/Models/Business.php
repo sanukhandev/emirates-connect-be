@@ -6,6 +6,7 @@ use App\Enums\BusinessRole;
 use App\Enums\BusinessStatus;
 use App\Enums\Emirate;
 use App\Enums\Industry;
+use App\Enums\VerificationStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,7 +21,7 @@ class Business extends Model
     protected $fillable = [
         'name', 'slug', 'tagline', 'description', 'industry', 'emirate',
         'website_url', 'email', 'phone', 'logo_path', 'cover_image_path',
-        'status', 'created_by',
+        'status', 'created_by', 'verification_status',
     ];
 
     protected $hidden = ['logo_path', 'cover_image_path', 'created_by'];
@@ -31,6 +32,7 @@ class Business extends Model
             'industry' => Industry::class,
             'emirate' => Emirate::class,
             'status' => BusinessStatus::class,
+            'verification_status' => VerificationStatus::class,
         ];
     }
 

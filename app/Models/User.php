@@ -29,6 +29,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'account_status',
+        'is_system_admin',
     ];
 
     /**
@@ -52,6 +53,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'account_status' => UserStatus::class,
+            'is_system_admin' => 'boolean',
         ];
     }
 
@@ -93,5 +95,10 @@ class User extends Authenticatable implements MustVerifyEmail
     public function followerEdges(): MorphMany
     {
         return $this->morphMany(Follow::class, 'followable');
+    }
+
+    public function verificationRequests(): HasMany
+    {
+        return $this->hasMany(VerificationRequest::class, 'submitted_by_user_id');
     }
 }

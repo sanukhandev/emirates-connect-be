@@ -16,6 +16,7 @@ class PublicUserResource extends JsonResource
             'followers_count' => $this->when($this->relationLoaded('follow_summary'), fn () => $this->follow_summary['followers_count']),
             'following_count' => $this->when($this->relationLoaded('follow_summary'), fn () => $this->follow_summary['following_count']),
             'is_following' => $this->when($this->relationLoaded('follow_summary'), fn () => $this->follow_summary['is_following']),
+            'is_verified' => $this->profile?->verification_status?->value === 'approved',
         ];
     }
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\Emirate;
 use App\Enums\Industry;
+use App\Enums\VerificationStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,6 +26,7 @@ class Profile extends Model
         'avatar_path',
         'cover_image_path',
         'onboarding_completed_at',
+        'verification_status',
     ];
 
     protected $hidden = [
@@ -38,6 +40,7 @@ class Profile extends Model
             'industry' => Industry::class,
             'emirate' => Emirate::class,
             'onboarding_completed_at' => 'datetime',
+            'verification_status' => VerificationStatus::class,
         ];
     }
 

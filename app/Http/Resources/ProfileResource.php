@@ -23,6 +23,7 @@ class ProfileResource extends JsonResource
             'avatar_url' => $this->avatar_path ? Storage::url($this->avatar_path) : null,
             'cover_image_url' => $this->cover_image_path ? Storage::url($this->cover_image_path) : null,
             'onboarding_completed' => $this->onboarding_completed_at !== null,
+            'is_verified' => $this->verification_status?->value === 'approved',
         ];
     }
 }
