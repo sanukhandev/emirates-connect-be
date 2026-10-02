@@ -116,6 +116,23 @@ Search is public, MySQL-backed and rate-limited. It covers only visible users/pr
 
 Search uses bound queries with escaped LIKE wildcards and a 60 requests/minute throttle. Search results expose only public profile/business fields and `is_verified`; follower state and counts are intentionally omitted to avoid per-result queries.
 
+### Reels
+
+Reels use a dedicated two-step lifecycle: create a reel record, then upload one MP4 video to private source storage. The local MVP processing service promotes the validated source to the public playback disk synchronously; the service boundary is ready for queued transcoding and CDN/object storage later. Only `published` reels are public, and public resources expose playback metadata without source or storage paths.
+
+| Method | Endpoint | Authentication | Purpose |
+| --- | --- | --- | --- |
+| POST | `/api/v1/reels` | Active authenticated user | Create a user or authorized business reel in `uploading` state |
+| POST | `/api/v1/reels/{reel}/video` | Active creator/manager | Store one private MP4 and process it to playback |
+| PATCH/DELETE | `/api/v1/reels/{reel}` | Creator or business owner/admin/editor | Update caption or soft-delete a reel |
+| GET | `/api/v1/reels` | Public | Chronological published reel feed with cursor pagination |
+| GET | `/api/v1/reels/{reel}` | Public / authorized creator | Read a published reel or an authorized non-public reel |
+| GET | `/api/v1/me/reels` | Active authenticated user | List the current user's reels, including processing failures |
+| GET | `/api/v1/users/{user}/reels` | Public | List published reels for a visible user |
+| GET | `/api/v1/businesses/{slug}/reels` | Public | List published reels for an active business |
+
+Accepted uploads are `video/mp4` up to 100 MB. Source files use generated private paths; public playback uses a separate disk. Reels are globally chronological and have no recommendations, reactions, comments, view counts or ranking signals.
+
 ---
 
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>

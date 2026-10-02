@@ -29,6 +29,7 @@ use App\Http\Controllers\Api\V1\PostMediaController;
 use App\Http\Controllers\Api\V1\PostReactionController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ProfileMediaController;
+use App\Http\Controllers\Api\V1\ReelController;
 use App\Http\Controllers\Api\V1\SearchController;
 use App\Http\Controllers\Api\V1\UserController;
 use App\Http\Controllers\Api\V1\UserFollowController;
@@ -68,6 +69,7 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/me', [AccountController::class, 'show']);
         Route::patch('/me', [AccountController::class, 'update']);
         Route::get('/me/posts', [MyPostController::class, 'index']);
+        Route::get('/me/reels', [ReelController::class, 'me']);
         Route::get('/feed', [FeedController::class, 'index']);
         Route::get('/me/profile', [ProfileController::class, 'show']);
         Route::patch('/me/profile', [ProfileController::class, 'update']);
@@ -94,12 +96,16 @@ Route::prefix('v1')->group(function (): void {
 
     Route::get('/users/{user}', [UserController::class, 'show']);
     Route::get('/users/{user}/posts', [UserPostController::class, 'index']);
+    Route::get('/users/{user}/reels', [ReelController::class, 'user']);
     Route::get('/users/{user}/followers', [UserNetworkController::class, 'followers']);
     Route::get('/users/{user}/following', [UserNetworkController::class, 'following']);
     Route::get('/businesses/{business:slug}', [BusinessController::class, 'show']);
     Route::get('/businesses/{business:slug}/posts', [BusinessPostController::class, 'index']);
+    Route::get('/businesses/{business:slug}/reels', [ReelController::class, 'business']);
     Route::get('/businesses/{business:slug}/followers', [BusinessFollowerController::class, 'index']);
     Route::get('/posts/{post}', [PostController::class, 'show']);
+    Route::get('/reels', [ReelController::class, 'index']);
+    Route::get('/reels/{reel}', [ReelController::class, 'show']);
     Route::get('/posts/{post}/comments', [PostCommentController::class, 'index']);
     Route::get('/meta/industries', [MetaController::class, 'industries']);
     Route::get('/meta/emirates', [MetaController::class, 'emirates']);
@@ -112,6 +118,12 @@ Route::prefix('v1')->group(function (): void {
     Route::middleware(['auth:sanctum', 'active.account'])->group(function (): void {
         Route::post('/businesses', [BusinessController::class, 'store']);
         Route::post('/posts', [PostController::class, 'store']);
+        Route::middleware('throttle:reel-mutations')->group(function (): void {
+            Route::post('/reels', [ReelController::class, 'store']);
+            Route::post('/reels/{reel}/video', [ReelController::class, 'upload']);
+            Route::patch('/reels/{reel}', [ReelController::class, 'update']);
+            Route::delete('/reels/{reel}', [ReelController::class, 'destroy']);
+        });
         Route::post('/posts/{post}/comments', [PostCommentController::class, 'store']);
         Route::post('/comments/{comment}/replies', [CommentReplyController::class, 'store']);
         Route::patch('/comments/{comment}', [CommentController::class, 'update']);

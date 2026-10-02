@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Business;
 use App\Models\Comment;
 use App\Models\Post;
+use App\Models\Reel;
 use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -28,7 +29,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Relation::enforceMorphMap(['user' => User::class, 'business' => Business::class, 'post' => Post::class, 'comment' => Comment::class]);
+        Relation::enforceMorphMap(['user' => User::class, 'business' => Business::class, 'post' => Post::class, 'comment' => Comment::class, 'reel' => Reel::class]);
 
         RateLimiter::for('auth-login', function (Request $request): Limit {
             return Limit::perMinute(5)->by($this->identityKey($request));
@@ -44,6 +45,10 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('search', function (Request $request): Limit {
             return Limit::perMinute(60)->by(($request->user()?->getAuthIdentifier() ?? 'guest').'|'.$request->ip());
+        });
+
+        RateLimiter::for('reel-mutations', function (Request $request): Limit {
+            return Limit::perHour(20)->by(($request->user()?->getAuthIdentifier() ?? 'guest').'|'.$request->ip());
         });
     }
 
