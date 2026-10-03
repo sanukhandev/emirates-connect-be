@@ -141,6 +141,23 @@ Authenticated active users can report a visible user, business, post, comment or
 | GET | `/api/v1/admin/reports/{report}` | Active system admin | View report, safe target summary and audit history |
 | PATCH | `/api/v1/admin/reports/{report}` | Active system admin | Dismiss or apply a target-appropriate moderation action |
 
+### Admin Console API
+
+The platform Admin Console consumes system-admin-only endpoints under `/api/v1/admin/*` for dashboard counts, mixed user/business verification administration and audit, the EC-015 moderation queue/audit, and bounded user/business operational lists/details. Direct user or business suspension requires an explicit reason and is audited; system-admin accounts cannot be suspended through the generic action. Business memberships do not grant platform-admin access, and no impersonation, password administration or generic database editing endpoint is provided.
+
+| Method | Endpoint | Authentication | Purpose |
+| --- | --- | --- | --- |
+| GET | `/api/v1/admin/dashboard` | Active system admin | Operational counts |
+| GET | `/api/v1/admin/verifications` | Active system admin | Mixed user/business verification queue |
+| GET | `/api/v1/admin/verifications/audit` | Active system admin | Verification audit history |
+| GET | `/api/v1/admin/moderation/audit` | Active system admin | Moderation audit history |
+| GET | `/api/v1/admin/users` | Active system admin | Filtered operational user list |
+| GET | `/api/v1/admin/users/{id}` | Active system admin | Safe user detail |
+| POST | `/api/v1/admin/users/{id}/suspend` | Active system admin | Reasoned audited user suspension |
+| GET | `/api/v1/admin/businesses` | Active system admin | Filtered operational business list |
+| GET | `/api/v1/admin/businesses/{id}` | Active system admin | Safe business detail |
+| POST | `/api/v1/admin/businesses/{id}/suspend` | Active system admin | Reasoned audited business suspension |
+
 ### Reels
 
 Reels use a dedicated two-step lifecycle: create a reel record, then upload one MP4 video to private source storage. The local MVP processing service promotes the validated source to the public playback disk synchronously; the service boundary is ready for queued transcoding and CDN/object storage later. Only `published` reels are public, and public resources expose playback metadata without source or storage paths.

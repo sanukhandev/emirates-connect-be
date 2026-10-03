@@ -61,6 +61,11 @@ class Business extends Model
         return $this->morphMany(Post::class, 'author');
     }
 
+    public function reels(): MorphMany
+    {
+        return $this->morphMany(Reel::class, 'author');
+    }
+
     public function followerEdges(): MorphMany
     {
         return $this->morphMany(Follow::class, 'followable');

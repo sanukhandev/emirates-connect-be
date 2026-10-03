@@ -9,6 +9,6 @@ class VerificationAuditResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        return ['action' => $this->action, 'from_status' => $this->from_status, 'to_status' => $this->to_status, 'metadata' => $this->metadata, 'created_at' => $this->created_at?->toISOString()];
+        return ['action' => $this->action, 'from_status' => $this->from_status, 'to_status' => $this->to_status, 'actor' => $this->whenLoaded('actor', fn () => $this->actor ? ['id' => $this->actor->id, 'display_name' => $this->actor->profile?->display_name ?: $this->actor->name] : null), 'metadata' => $this->metadata, 'created_at' => $this->created_at?->toISOString()];
     }
 }

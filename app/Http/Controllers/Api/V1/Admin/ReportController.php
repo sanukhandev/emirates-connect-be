@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Admin;
 use App\Enums\ReportReason;
 use App\Enums\ReportStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\AdminReportIndexRequest;
 use App\Http\Requests\ModerateReportRequest;
 use App\Http\Resources\AdminReportResource;
 use App\Models\Business;
@@ -19,7 +20,7 @@ use Illuminate\Http\Request;
 
 class ReportController extends Controller
 {
-    public function index(Request $request): mixed
+    public function index(AdminReportIndexRequest $request): mixed
     {
         $query = $this->query($request);
         foreach (['status' => ReportStatus::class, 'reason' => ReportReason::class] as $field => $enum) {

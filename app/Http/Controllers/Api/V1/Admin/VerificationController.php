@@ -4,11 +4,17 @@ namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Enums\VerificationStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\AdminVerificationIndexRequest;
 use App\Http\Requests\Verification\RejectVerificationRequest;
+use App\Http\Resources\VerificationAuditResource;
 use App\Http\Resources\VerificationRequestResource;
+use App\Models\Business;
+use App\Models\User;
+use App\Models\VerificationAuditLog;
 use App\Models\VerificationDocument;
 use App\Models\VerificationRequest;
 use App\Services\VerificationService;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -17,9 +23,9 @@ use Illuminate\Support\Facades\URL;
 
 class VerificationController extends Controller
 {
-    public function index(Request $request)
+    public function index(AdminVerificationIndexRequest $request)
     {
-        $query = VerificationRequest::query()->with(['subject.profile', 'documents'])->latest('submitted_at')->latest('id');
+        $query = $this->query()->latest('submitted_at')->latest('id');
         if ($request->filled('status')) {
             $query->where('status', $request->string('status'));
         }
@@ -27,12 +33,12 @@ class VerificationController extends Controller
             $query->where('subject_type', $request->string('subject_type'));
         }
 
-        return VerificationRequestResource::collection($query->paginate(20));
+        return VerificationRequestResource::collection($query->paginate(min($request->integer('per_page', 20), 50)));
     }
 
     public function show(VerificationRequest $verification): JsonResponse
     {
-        return VerificationRequestResource::make($verification->load(['subject.profile', 'documents', 'auditLogs']))->response();
+        return VerificationRequestResource::make($this->query()->with(['documents', 'auditLogs'])->findOrFail($verification->id))->response();
     }
 
     public function approve(VerificationRequest $verification, Request $request, VerificationService $service): JsonResponse
@@ -63,5 +69,28 @@ class VerificationController extends Controller
         VerificationDocument::query()->whereKey($document->id)->firstOrFail()->request->auditLogs()->create(['actor_user_id' => request()->user()->id, 'action' => 'document_accessed', 'metadata' => ['document_id' => $document->id], 'created_at' => now()]);
 
         return Storage::disk($document->storage_disk)->download($document->storage_path, $document->original_filename ?: 'verification-document');
+    }
+
+    public function audit(Request $request)
+    {
+        $query = VerificationAuditLog::query()
+            ->with('actor.profile')
+            ->latest('created_at')->latest('id');
+
+        if ($request->filled('action')) {
+            $query->where('action', $request->string('action'));
+        }
+
+        return VerificationAuditResource::collection($query->paginate(min($request->integer('per_page', 20), 50)));
+    }
+
+    private function query()
+    {
+        return VerificationRequest::query()->with([
+            'subject' => fn (MorphTo $morphTo) => $morphTo->morphWith([
+                User::class => ['profile'],
+                Business::class => [],
+            ]),
+        ]);
     }
 }

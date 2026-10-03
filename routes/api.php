@@ -1,7 +1,11 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AccountController;
+use App\Http\Controllers\Api\V1\Admin\AuditController as AdminAuditController;
+use App\Http\Controllers\Api\V1\Admin\BusinessController as AdminBusinessController;
+use App\Http\Controllers\Api\V1\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Api\V1\Admin\ReportController as AdminReportController;
+use App\Http\Controllers\Api\V1\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\V1\Admin\VerificationController as AdminVerificationController;
 use App\Http\Controllers\Api\V1\Auth\EmailVerificationController;
 use App\Http\Controllers\Api\V1\Auth\ForgotPasswordController;
@@ -101,10 +105,22 @@ Route::prefix('v1')->group(function (): void {
 
     Route::middleware(['auth:sanctum', 'active.account', 'system.admin'])->prefix('admin/verifications')->group(function (): void {
         Route::get('/', [AdminVerificationController::class, 'index']);
+        Route::get('/audit', [AdminVerificationController::class, 'audit']);
         Route::get('/{verification}', [AdminVerificationController::class, 'show']);
         Route::post('/{verification}/approve', [AdminVerificationController::class, 'approve']);
         Route::post('/{verification}/reject', [AdminVerificationController::class, 'reject']);
         Route::get('/{verification}/documents/{document}', [AdminVerificationController::class, 'document']);
+    });
+
+    Route::middleware(['auth:sanctum', 'active.account', 'system.admin'])->prefix('admin')->group(function (): void {
+        Route::get('/dashboard', AdminDashboardController::class);
+        Route::get('/users', [AdminUserController::class, 'index']);
+        Route::get('/users/{user}', [AdminUserController::class, 'show']);
+        Route::post('/users/{user}/suspend', [AdminUserController::class, 'suspend']);
+        Route::get('/businesses', [AdminBusinessController::class, 'index']);
+        Route::get('/businesses/{business}', [AdminBusinessController::class, 'show']);
+        Route::post('/businesses/{business}/suspend', [AdminBusinessController::class, 'suspend']);
+        Route::get('/moderation/audit', [AdminAuditController::class, 'moderation']);
     });
 
     Route::middleware(['auth:sanctum', 'active.account', 'system.admin', 'signed'])->get('/admin/verifications/{verification}/documents/{document}/download', [AdminVerificationController::class, 'download'])->name('verification.document.download');
