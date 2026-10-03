@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'active.account' => EnsureAccountIsActive::class,
             'system.admin' => EnsureSystemAdmin::class,
         ]);
+        $middleware->redirectGuestsTo(static fn (Request $request): ?string => $request->is('api/*') ? null : '/login');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(static fn (Request $request, Throwable $exception): bool => $request->is('api/*') || $request->expectsJson());
