@@ -20,6 +20,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class VerificationController extends Controller
 {
@@ -63,12 +64,15 @@ class VerificationController extends Controller
         return response()->json(['data' => ['url' => $url, 'expires_at' => now()->addMinutes(VerificationService::ACCESS_TTL_MINUTES)->toISOString()]]);
     }
 
-    public function download(VerificationRequest $verification, VerificationDocument $document): Response
+    public function download(VerificationRequest $verification, VerificationDocument $document): Response|StreamedResponse
     {
         abort_unless($document->verification_request_id === $verification->id, Response::HTTP_NOT_FOUND);
         VerificationDocument::query()->whereKey($document->id)->firstOrFail()->request->auditLogs()->create(['actor_user_id' => request()->user()->id, 'action' => 'document_accessed', 'metadata' => ['document_id' => $document->id], 'created_at' => now()]);
 
-        return Storage::disk($document->storage_disk)->download($document->storage_path, $document->original_filename ?: 'verification-document');
+        $response = Storage::disk($document->storage_disk)->download($document->storage_path, $document->original_filename ?: 'verification-document');
+        $response->headers->set('Cache-Control', 'private, no-store');
+
+        return $response;
     }
 
     public function audit(Request $request)

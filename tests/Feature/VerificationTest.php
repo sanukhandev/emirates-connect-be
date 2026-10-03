@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\BusinessRole;
 use App\Enums\BusinessStatus;
+use App\Enums\UserStatus;
 use App\Enums\VerificationStatus;
 use App\Models\Business;
 use App\Models\BusinessMember;
@@ -11,7 +12,9 @@ use App\Models\User;
 use App\Models\VerificationRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
 class VerificationTest extends TestCase
@@ -91,8 +94,26 @@ class VerificationTest extends TestCase
         $document = $verification->documents->firstOrFail();
         $url = $this->actingAs($admin)->getJson('/api/v1/admin/verifications/'.$verification->id.'/documents/'.$document->id)->assertOk()->json('data.url');
         $this->assertStringContainsString('signature=', $url);
+        Auth::forgetGuards();
+        $this->getJson($url)->assertUnauthorized();
+        $download = $this->actingAs($admin)->get($url)->assertOk()->assertHeader('Content-Type', 'application/pdf');
+        $this->assertStringContainsString('private', (string) $download->headers->get('Cache-Control'));
+        $this->assertStringContainsString('no-store', (string) $download->headers->get('Cache-Control'));
+        $this->actingAs(User::factory()->create())->getJson($url)->assertForbidden();
+        $businessAdmin = User::factory()->create();
+        $business = Business::factory()->create(['created_by' => $businessAdmin->id, 'status' => BusinessStatus::ACTIVE]);
+        BusinessMember::create(['business_id' => $business->id, 'user_id' => $businessAdmin->id, 'role' => BusinessRole::OWNER]);
+        $this->actingAs($businessAdmin)->getJson($url)->assertForbidden();
+        $suspendedAdmin = User::factory()->create(['is_system_admin' => true, 'account_status' => UserStatus::SUSPENDED]);
+        $suspendedUrl = $this->actingAs($admin)->getJson('/api/v1/admin/verifications/'.$verification->id.'/documents/'.$document->id)->json('data.url');
+        $this->actingAs($suspendedAdmin)->getJson($suspendedUrl)->assertForbidden();
+        $this->actingAs($admin)->getJson(str_replace('signature=', 'signature=tampered', $url))->assertForbidden();
+        $expiredUrl = URL::temporarySignedRoute('verification.document.download', now()->subMinute(), ['verification' => $verification->id, 'document' => $document->id]);
+        $this->actingAs($admin)->getJson($expiredUrl)->assertForbidden();
         $this->actingAs(User::factory()->create())->getJson('/api/v1/admin/verifications/'.$verification->id.'/documents/'.$document->id)->assertForbidden();
         $other = VerificationRequest::create(['subject_type' => 'user', 'subject_id' => $user->id, 'status' => VerificationStatus::REJECTED, 'submitted_by_user_id' => $user->id, 'submitted_at' => now()]);
         $this->actingAs($admin)->getJson('/api/v1/admin/verifications/'.$other->id.'/documents/'.$document->id)->assertNotFound();
+        $otherUrl = URL::temporarySignedRoute('verification.document.download', now()->addMinutes(5), ['verification' => $other->id, 'document' => $document->id]);
+        $this->actingAs($admin)->getJson($otherUrl)->assertNotFound();
     }
 }

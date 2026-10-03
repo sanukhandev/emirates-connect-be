@@ -123,7 +123,7 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/moderation/audit', [AdminAuditController::class, 'moderation']);
     });
 
-    Route::middleware(['auth:sanctum', 'active.account', 'system.admin', 'signed'])->get('/admin/verifications/{verification}/documents/{document}/download', [AdminVerificationController::class, 'download'])->name('verification.document.download');
+    Route::middleware(['web', 'auth:sanctum', 'active.account', 'system.admin', 'signed'])->get('/admin/verifications/{verification}/documents/{document}/download', [AdminVerificationController::class, 'download'])->name('verification.document.download');
 
     Route::get('/users/{user}', [UserController::class, 'show']);
     Route::get('/users/{user}/posts', [UserPostController::class, 'index']);
