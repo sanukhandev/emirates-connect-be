@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AccountController;
+use App\Http\Controllers\Api\V1\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Api\V1\Admin\VerificationController as AdminVerificationController;
 use App\Http\Controllers\Api\V1\Auth\EmailVerificationController;
 use App\Http\Controllers\Api\V1\Auth\ForgotPasswordController;
@@ -31,6 +32,7 @@ use App\Http\Controllers\Api\V1\PostReactionController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ProfileMediaController;
 use App\Http\Controllers\Api\V1\ReelController;
+use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\SearchController;
 use App\Http\Controllers\Api\V1\UserController;
 use App\Http\Controllers\Api\V1\UserFollowController;
@@ -75,6 +77,8 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
         Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
         Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead']);
+        Route::post('/reports', [ReportController::class, 'store'])->middleware('throttle:reports');
+        Route::get('/me/reports', [ReportController::class, 'mine']);
         Route::get('/feed', [FeedController::class, 'index']);
         Route::get('/me/profile', [ProfileController::class, 'show']);
         Route::patch('/me/profile', [ProfileController::class, 'update']);
@@ -87,6 +91,12 @@ Route::prefix('v1')->group(function (): void {
         Route::delete('/me/profile/avatar', [ProfileMediaController::class, 'deleteAvatar']);
         Route::post('/me/profile/cover-image', [ProfileMediaController::class, 'uploadCover']);
         Route::delete('/me/profile/cover-image', [ProfileMediaController::class, 'deleteCover']);
+    });
+
+    Route::middleware(['auth:sanctum', 'active.account', 'system.admin'])->prefix('admin/reports')->group(function (): void {
+        Route::get('/', [AdminReportController::class, 'index']);
+        Route::get('/{report}', [AdminReportController::class, 'show']);
+        Route::patch('/{report}', [AdminReportController::class, 'update']);
     });
 
     Route::middleware(['auth:sanctum', 'active.account', 'system.admin'])->prefix('admin/verifications')->group(function (): void {

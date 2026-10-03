@@ -129,6 +129,18 @@ Notifications are database-backed, user-targeted and created from successful fol
 
 Notification reads are recipient-scoped and ordered newest first. Delivery is synchronous in the MVP, with domain events keeping a future queued listener path open. No push, email, SMS or realtime delivery is included.
 
+### Reporting and moderation
+
+Authenticated active users can report a visible user, business, post, comment or reel with a controlled reason. Reports are deduplicated per reporter and target while unresolved and limited to 10 per hour. System admins review reports through `/api/v1/admin/reports`; business administrators are not platform moderators. Dismissals and moderation actions are append-only audited, and moderation uses existing soft-delete/account-status behavior without automatic thresholds, AI moderation or reporter notifications.
+
+| Method | Endpoint | Authentication | Purpose |
+| --- | --- | --- | --- |
+| POST | `/api/v1/reports` | Active authenticated user | Create a pending report |
+| GET | `/api/v1/me/reports` | Active authenticated user | List the caller's reports without reviewer/internal data |
+| GET | `/api/v1/admin/reports` | Active system admin | Paginated queue with status/type/reason filters |
+| GET | `/api/v1/admin/reports/{report}` | Active system admin | View report, safe target summary and audit history |
+| PATCH | `/api/v1/admin/reports/{report}` | Active system admin | Dismiss or apply a target-appropriate moderation action |
+
 ### Reels
 
 Reels use a dedicated two-step lifecycle: create a reel record, then upload one MP4 video to private source storage. The local MVP processing service promotes the validated source to the public playback disk synchronously; the service boundary is ready for queued transcoding and CDN/object storage later. Only `published` reels are public, and public resources expose playback metadata without source or storage paths.

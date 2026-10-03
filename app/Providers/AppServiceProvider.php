@@ -60,6 +60,10 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('reel-mutations', function (Request $request): Limit {
             return Limit::perHour(20)->by(($request->user()?->getAuthIdentifier() ?? 'guest').'|'.$request->ip());
         });
+
+        RateLimiter::for('reports', function (Request $request): Limit {
+            return Limit::perHour(10)->by(($request->user()?->getAuthIdentifier() ?? 'guest').'|'.$request->ip());
+        });
     }
 
     private function identityKey(Request $request): string
