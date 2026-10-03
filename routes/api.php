@@ -56,7 +56,7 @@ Route::prefix('v1')->group(function (): void {
     });
 
     Route::prefix('auth')->group(function (): void {
-        Route::post('/register', RegisterController::class);
+        Route::post('/register', RegisterController::class)->middleware('throttle:auth-register');
         Route::post('/login', LoginController::class)->middleware('throttle:auth-login');
         Route::post('/mobile/token', MobileTokenController::class)->middleware('throttle:auth-login');
         Route::post('/forgot-password', ForgotPasswordController::class)->middleware('throttle:auth-forgot-password');
@@ -88,9 +88,9 @@ Route::prefix('v1')->group(function (): void {
         Route::patch('/me/profile', [ProfileController::class, 'update']);
         Route::post('/me/onboarding/complete', [OnboardingController::class, 'complete']);
         Route::get('/verification/user', [VerificationController::class, 'userStatus']);
-        Route::post('/verification/user', [VerificationController::class, 'submitUser']);
+        Route::post('/verification/user', [VerificationController::class, 'submitUser'])->middleware('throttle:verification-submissions');
         Route::get('/verification/business/{business:slug}', [VerificationController::class, 'businessStatus']);
-        Route::post('/verification/business/{business:slug}', [VerificationController::class, 'submitBusiness']);
+        Route::post('/verification/business/{business:slug}', [VerificationController::class, 'submitBusiness'])->middleware('throttle:verification-submissions');
         Route::post('/me/profile/avatar', [ProfileMediaController::class, 'uploadAvatar']);
         Route::delete('/me/profile/avatar', [ProfileMediaController::class, 'deleteAvatar']);
         Route::post('/me/profile/cover-image', [ProfileMediaController::class, 'uploadCover']);
@@ -100,15 +100,15 @@ Route::prefix('v1')->group(function (): void {
     Route::middleware(['auth:sanctum', 'active.account', 'system.admin'])->prefix('admin/reports')->group(function (): void {
         Route::get('/', [AdminReportController::class, 'index']);
         Route::get('/{report}', [AdminReportController::class, 'show']);
-        Route::patch('/{report}', [AdminReportController::class, 'update']);
+        Route::patch('/{report}', [AdminReportController::class, 'update'])->middleware('throttle:admin-mutations');
     });
 
     Route::middleware(['auth:sanctum', 'active.account', 'system.admin'])->prefix('admin/verifications')->group(function (): void {
         Route::get('/', [AdminVerificationController::class, 'index']);
         Route::get('/audit', [AdminVerificationController::class, 'audit']);
         Route::get('/{verification}', [AdminVerificationController::class, 'show']);
-        Route::post('/{verification}/approve', [AdminVerificationController::class, 'approve']);
-        Route::post('/{verification}/reject', [AdminVerificationController::class, 'reject']);
+        Route::post('/{verification}/approve', [AdminVerificationController::class, 'approve'])->middleware('throttle:admin-mutations');
+        Route::post('/{verification}/reject', [AdminVerificationController::class, 'reject'])->middleware('throttle:admin-mutations');
         Route::get('/{verification}/documents/{document}', [AdminVerificationController::class, 'document']);
     });
 
@@ -116,14 +116,14 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/dashboard', AdminDashboardController::class);
         Route::get('/users', [AdminUserController::class, 'index']);
         Route::get('/users/{user}', [AdminUserController::class, 'show']);
-        Route::post('/users/{user}/suspend', [AdminUserController::class, 'suspend']);
+        Route::post('/users/{user}/suspend', [AdminUserController::class, 'suspend'])->middleware('throttle:admin-mutations');
         Route::get('/businesses', [AdminBusinessController::class, 'index']);
         Route::get('/businesses/{business}', [AdminBusinessController::class, 'show']);
-        Route::post('/businesses/{business}/suspend', [AdminBusinessController::class, 'suspend']);
+        Route::post('/businesses/{business}/suspend', [AdminBusinessController::class, 'suspend'])->middleware('throttle:admin-mutations');
         Route::get('/moderation/audit', [AdminAuditController::class, 'moderation']);
     });
 
-    Route::middleware(['web', 'auth:sanctum', 'active.account', 'system.admin', 'signed'])->get('/admin/verifications/{verification}/documents/{document}/download', [AdminVerificationController::class, 'download'])->name('verification.document.download');
+    Route::middleware(['web', 'auth:sanctum', 'active.account', 'system.admin', 'signed', 'throttle:admin-documents'])->get('/admin/verifications/{verification}/documents/{document}/download', [AdminVerificationController::class, 'download'])->name('verification.document.download');
 
     Route::get('/users/{user}', [UserController::class, 'show']);
     Route::get('/users/{user}/posts', [UserPostController::class, 'index']);

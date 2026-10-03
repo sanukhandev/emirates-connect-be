@@ -118,6 +118,25 @@ class AuthenticationTest extends TestCase
         ])->assertTooManyRequests();
     }
 
+    public function test_registration_is_rate_limited(): void
+    {
+        for ($attempt = 1; $attempt <= 5; $attempt++) {
+            $this->withHeader('Origin', 'http://localhost:4200')->postJson('/api/v1/auth/register', [
+                'name' => 'Sanu Khan',
+                'email' => "sanu{$attempt}@example.com",
+                'password' => 'StrongPassword123!',
+                'password_confirmation' => 'StrongPassword123!',
+            ])->assertCreated();
+        }
+
+        $this->withHeader('Origin', 'http://localhost:4200')->postJson('/api/v1/auth/register', [
+            'name' => 'Sanu Khan',
+            'email' => 'sanu-six@example.com',
+            'password' => 'StrongPassword123!',
+            'password_confirmation' => 'StrongPassword123!',
+        ])->assertTooManyRequests();
+    }
+
     public function test_suspended_and_disabled_users_cannot_login_or_access_protected_routes(): void
     {
         foreach ([UserStatus::SUSPENDED, UserStatus::DISABLED] as $status) {

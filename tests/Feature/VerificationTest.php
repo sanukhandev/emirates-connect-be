@@ -99,6 +99,8 @@ class VerificationTest extends TestCase
         $download = $this->actingAs($admin)->get($url)->assertOk()->assertHeader('Content-Type', 'application/pdf');
         $this->assertStringContainsString('private', (string) $download->headers->get('Cache-Control'));
         $this->assertStringContainsString('no-store', (string) $download->headers->get('Cache-Control'));
+        $document->update(['original_filename' => "review\r\nunsafe.pdf"]);
+        $this->actingAs($admin)->get($url)->assertOk()->assertHeader('Content-Disposition', 'attachment; filename=review-unsafe.pdf');
         $this->actingAs(User::factory()->create())->getJson($url)->assertForbidden();
         $businessAdmin = User::factory()->create();
         $business = Business::factory()->create(['created_by' => $businessAdmin->id, 'status' => BusinessStatus::ACTIVE]);

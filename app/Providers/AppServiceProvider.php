@@ -45,6 +45,10 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by($this->identityKey($request));
         });
 
+        RateLimiter::for('auth-register', function (Request $request): Limit {
+            return Limit::perMinute(5)->by('registration|'.$request->ip());
+        });
+
         RateLimiter::for('auth-forgot-password', function (Request $request): Limit {
             return Limit::perMinute(5)->by($this->identityKey($request));
         });
@@ -63,6 +67,18 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('reports', function (Request $request): Limit {
             return Limit::perHour(10)->by(($request->user()?->getAuthIdentifier() ?? 'guest').'|'.$request->ip());
+        });
+
+        RateLimiter::for('verification-submissions', function (Request $request): Limit {
+            return Limit::perHour(5)->by(($request->user()?->getAuthIdentifier() ?? 'guest').'|'.$request->ip());
+        });
+
+        RateLimiter::for('admin-mutations', function (Request $request): Limit {
+            return Limit::perMinute(30)->by(($request->user()?->getAuthIdentifier() ?? 'guest').'|'.$request->ip());
+        });
+
+        RateLimiter::for('admin-documents', function (Request $request): Limit {
+            return Limit::perMinute(30)->by(($request->user()?->getAuthIdentifier() ?? 'guest').'|'.$request->ip());
         });
     }
 

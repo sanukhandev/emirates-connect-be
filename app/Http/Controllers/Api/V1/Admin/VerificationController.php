@@ -20,6 +20,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class VerificationController extends Controller
@@ -69,7 +70,9 @@ class VerificationController extends Controller
         abort_unless($document->verification_request_id === $verification->id, Response::HTTP_NOT_FOUND);
         VerificationDocument::query()->whereKey($document->id)->firstOrFail()->request->auditLogs()->create(['actor_user_id' => request()->user()->id, 'action' => 'document_accessed', 'metadata' => ['document_id' => $document->id], 'created_at' => now()]);
 
-        $response = Storage::disk($document->storage_disk)->download($document->storage_path, $document->original_filename ?: 'verification-document');
+        $filename = preg_replace('/[^\pL\pN._-]+/u', '-', basename((string) $document->original_filename));
+        $filename = trim((string) $filename, '.-') ?: 'verification-document';
+        $response = Storage::disk($document->storage_disk)->download($document->storage_path, Str::limit($filename, 180, ''));
         $response->headers->set('Cache-Control', 'private, no-store');
 
         return $response;

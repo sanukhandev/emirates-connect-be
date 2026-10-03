@@ -21,6 +21,8 @@ Sanctum uses its recommended hybrid model. Angular is a first-party SPA using th
 
 Start an Angular session with `GET /sanctum/csrf-cookie`, then send credentialed requests with the XSRF cookie/header. Password reset and email verification mail are faked in automated tests; configure the application mailer for local/manual use.
 
+Security controls and the production gate are documented in the parent repository under `docs/security/`. Registration, verification submission, reporting, admin mutations and signed verification-document access are rate-limited; production must override local debug, cookie, HTTPS, CORS and infrastructure settings before deployment.
+
 ### Profiles and onboarding
 
 `users` stores authentication/account identity; `profiles` stores professional/public identity. A profile is created during registration and backfilled lazily for legacy users. Profile edits and media mutations are limited to the authenticated user, while public profiles omit email and security data.
