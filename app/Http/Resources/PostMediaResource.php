@@ -13,7 +13,7 @@ class PostMediaResource extends JsonResource
         return [
             'id' => $this->id,
             'type' => $this->type,
-            'url' => Storage::url($this->path),
+            'url' => Storage::disk(config('posts.media_disk'))->url($this->path),
             'mime_type' => $this->mime_type,
             'width' => $this->width,
             'height' => $this->height,

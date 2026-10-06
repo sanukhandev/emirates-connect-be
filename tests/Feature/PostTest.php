@@ -86,11 +86,14 @@ class PostTest extends TestCase
             'author_type' => 'user', 'media' => $files,
         ], ['Accept' => 'application/json']);
 
-        $response->assertCreated()->assertJsonCount(4, 'data.media')->assertJsonMissingPath('data.media.0.path');
+        $response->assertCreated()
+            ->assertJsonCount(4, 'data.media')
+            ->assertJsonMissingPath('data.media.0.path')
+            ->assertJsonPath('data.media.0.url', fn (string $url): bool => str_contains($url, '/storage/posts/'));
         $post = Post::latest('id')->firstOrFail();
         $this->assertCount(4, $post->media);
         foreach ($post->media as $media) {
-            Storage::disk(config('filesystems.default'))->assertExists($media->path);
+            Storage::disk(config('posts.media_disk'))->assertExists($media->path);
         }
 
         $this->actingAs($user, 'sanctum')->post('/api/v1/posts/'.$post->id.'/media', [

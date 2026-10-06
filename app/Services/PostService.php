@@ -92,7 +92,7 @@ class PostService
         $media = $post->media()->findOrFail($mediaId);
         $path = $media->path;
         $media->delete();
-        Storage::delete($path);
+        Storage::disk(config('posts.media_disk'))->delete($path);
 
         return $this->loadPost($post->refresh());
     }
@@ -114,7 +114,7 @@ class PostService
     {
         $offset = $post->media()->count();
         foreach ($files as $index => $file) {
-            $path = $file->store(config('posts.media_directory').'/'.$post->id.'/media');
+            $path = $file->store(config('posts.media_directory').'/'.$post->id.'/media', ['disk' => config('posts.media_disk')]);
             if ($path === false) {
                 throw new RuntimeException('Post media could not be stored.');
             }
@@ -136,7 +136,7 @@ class PostService
     private function deleteStored(array $stored): void
     {
         foreach ($stored as $path) {
-            Storage::delete($path);
+            Storage::disk(config('posts.media_disk'))->delete($path);
         }
     }
 
