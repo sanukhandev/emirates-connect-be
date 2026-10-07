@@ -6,9 +6,9 @@ use App\Models\Business;
 use App\Models\Comment;
 use App\Models\Post;
 use App\Models\User;
+use App\Support\MediaUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
 
 class NotificationResource extends JsonResource
 {
@@ -30,12 +30,12 @@ class NotificationResource extends JsonResource
         return match (true) {
             $this->actor instanceof User && $this->actor->account_status?->value === 'active' => [
                 'type' => 'user', 'id' => $this->actor->id, 'display_name' => $this->actor->profile?->display_name ?: $this->actor->name,
-                'avatar_url' => $this->actor->profile?->avatar_path ? Storage::disk('public')->url($this->actor->profile->avatar_path) : null,
+                'avatar_url' => MediaUrl::for(request(), 'public', $this->actor->profile?->avatar_path),
                 'headline' => $this->actor->profile?->headline, 'is_verified' => $this->actor->profile?->verification_status?->value === 'approved',
             ],
             $this->actor instanceof Business && $this->actor->status?->value === 'active' => [
                 'type' => 'business', 'id' => $this->actor->id, 'name' => $this->actor->name, 'slug' => $this->actor->slug,
-                'logo_url' => $this->actor->logo_path ? Storage::disk('public')->url($this->actor->logo_path) : null, 'is_verified' => $this->actor->verification_status?->value === 'approved',
+                'logo_url' => MediaUrl::for(request(), 'public', $this->actor->logo_path), 'is_verified' => $this->actor->verification_status?->value === 'approved',
             ],
             default => null,
         };

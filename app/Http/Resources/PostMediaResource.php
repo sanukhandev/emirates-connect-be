@@ -2,9 +2,9 @@
 
 namespace App\Http\Resources;
 
+use App\Support\MediaUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
 
 class PostMediaResource extends JsonResource
 {
@@ -13,7 +13,7 @@ class PostMediaResource extends JsonResource
         return [
             'id' => $this->id,
             'type' => $this->type,
-            'url' => Storage::disk(config('posts.media_disk'))->url($this->path),
+            'url' => MediaUrl::for($request, config('posts.media_disk'), $this->path),
             'mime_type' => $this->mime_type,
             'width' => $this->width,
             'height' => $this->height,

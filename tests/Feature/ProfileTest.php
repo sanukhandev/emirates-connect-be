@@ -91,6 +91,22 @@ class ProfileTest extends TestCase
         $disk->assertMissing($new);
     }
 
+    public function test_local_profile_media_urls_are_api_host_anchored_and_missing_files_are_hidden(): void
+    {
+        Storage::fake('public');
+        config(['filesystems.disks.public.url' => '/storage']);
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user, 'sanctum')->post('/api/v1/me/profile/avatar', [
+            'avatar' => UploadedFile::fake()->create('avatar.jpg', 100, 'image/jpeg'),
+        ]);
+
+        $response->assertOk()->assertJsonPath('data.avatar_url', fn (string $url): bool => str_starts_with($url, 'http://localhost:8000/storage/profiles/'));
+        $user->refresh()->profile->update(['avatar_path' => 'profiles/missing/avatar.jpg']);
+
+        $this->actingAs($user, 'sanctum')->getJson('/api/v1/me/profile')->assertOk()->assertJsonPath('data.avatar_url', null);
+    }
+
     public function test_invalid_avatar_and_cover_are_rejected(): void
     {
         $user = User::factory()->create();

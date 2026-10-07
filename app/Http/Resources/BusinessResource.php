@@ -2,9 +2,9 @@
 
 namespace App\Http\Resources;
 
+use App\Support\MediaUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
 
 class BusinessResource extends JsonResource
 {
@@ -29,8 +29,8 @@ class BusinessResource extends JsonResource
             'website_url' => $this->website_url,
             'email' => $this->email,
             'phone' => $this->phone,
-            'logo_url' => $this->logo_path ? Storage::disk('public')->url($this->logo_path) : null,
-            'cover_image_url' => $this->cover_image_path ? Storage::disk('public')->url($this->cover_image_path) : null,
+            'logo_url' => MediaUrl::for($request, 'public', $this->logo_path),
+            'cover_image_url' => MediaUrl::for($request, 'public', $this->cover_image_path),
             'status' => $this->status?->value,
             'current_user_role' => $role,
             'created_at' => $this->created_at?->toISOString(),

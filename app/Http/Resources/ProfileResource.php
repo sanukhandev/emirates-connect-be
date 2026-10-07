@@ -2,9 +2,9 @@
 
 namespace App\Http\Resources;
 
+use App\Support\MediaUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
 
 class ProfileResource extends JsonResource
 {
@@ -20,17 +20,10 @@ class ProfileResource extends JsonResource
             'emirate' => $this->emirate?->value,
             'website_url' => $this->website_url,
             'linkedin_url' => $this->linkedin_url,
-            'avatar_url' => $this->publicUrl($this->avatar_path),
-            'cover_image_url' => $this->publicUrl($this->cover_image_path),
+            'avatar_url' => MediaUrl::for($request, 'public', $this->avatar_path),
+            'cover_image_url' => MediaUrl::for($request, 'public', $this->cover_image_path),
             'onboarding_completed' => $this->onboarding_completed_at !== null,
             'is_verified' => $this->verification_status?->value === 'approved',
         ];
-    }
-
-    private function publicUrl(?string $path): ?string
-    {
-        $disk = Storage::disk('public');
-
-        return $path && $disk->exists($path) ? $disk->url($path) : null;
     }
 }

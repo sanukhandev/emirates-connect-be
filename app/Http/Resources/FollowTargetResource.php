@@ -4,9 +4,9 @@ namespace App\Http\Resources;
 
 use App\Models\Business;
 use App\Models\User;
+use App\Support\MediaUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
 
 class FollowTargetResource extends JsonResource
 {
@@ -17,7 +17,7 @@ class FollowTargetResource extends JsonResource
                 'type' => 'user', 'id' => $this->id, 'name' => $this->name,
                 'display_name' => $this->profile?->display_name,
                 'headline' => $this->profile?->headline,
-                'avatar_url' => $this->profile?->avatar_path ? Storage::disk('public')->url($this->profile->avatar_path) : null,
+                'avatar_url' => MediaUrl::for($request, 'public', $this->profile?->avatar_path),
             ];
         }
 
@@ -25,7 +25,7 @@ class FollowTargetResource extends JsonResource
             return [
                 'type' => 'business', 'id' => $this->id, 'name' => $this->name,
                 'slug' => $this->slug,
-                'logo_url' => $this->logo_path ? Storage::disk('public')->url($this->logo_path) : null,
+                'logo_url' => MediaUrl::for($request, 'public', $this->logo_path),
             ];
         }
 

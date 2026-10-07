@@ -2,9 +2,9 @@
 
 namespace App\Http\Resources;
 
+use App\Support\MediaUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
 
 class StoryResource extends JsonResource
 {
@@ -13,13 +13,13 @@ class StoryResource extends JsonResource
         return [
             'id' => $this->id,
             'body' => $this->body,
-            'media_url' => $this->media_path ? Storage::disk('public')->url($this->media_path) : null,
+            'media_url' => MediaUrl::for($request, 'public', $this->media_path),
             'media_type' => $this->media_type,
             'expires_at' => $this->expires_at?->toISOString(),
             'user' => [
                 'id' => $this->user?->id,
                 'name' => $this->user?->profile?->display_name ?: $this->user?->name,
-                'avatar_url' => $this->user?->profile?->avatar_path ? Storage::disk('public')->url($this->user->profile->avatar_path) : null,
+                'avatar_url' => MediaUrl::for($request, 'public', $this->user?->profile?->avatar_path),
                 'is_verified' => $this->user?->profile?->verification_status?->value === 'approved',
             ],
         ];
