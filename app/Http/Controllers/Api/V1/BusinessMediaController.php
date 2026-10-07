@@ -40,7 +40,7 @@ class BusinessMediaController extends Controller
 
     private function replace(Request $request, Business $business, string $field, string $column, string $kind): JsonResponse
     {
-        $disk = config('filesystems.default');
+        $disk = 'public';
         $oldPath = $business->{$column.'_path'};
         $path = $request->file($field)->store("businesses/{$business->id}/{$kind}", ['disk' => $disk]);
         $business->update([$column.'_path' => $path]);
@@ -54,7 +54,7 @@ class BusinessMediaController extends Controller
         $this->authorize('uploadMedia', $business);
         $oldPath = $business->{$column};
         $business->update([$column => null]);
-        $this->deleteManagedPath($oldPath, $business->id, $kind, config('filesystems.default'));
+        $this->deleteManagedPath($oldPath, $business->id, $kind, 'public');
 
         return response()->noContent();
     }

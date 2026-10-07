@@ -183,7 +183,7 @@ class BusinessTest extends TestCase
 
     public function test_logo_and_cover_upload_replacement_and_deletion_are_safe(): void
     {
-        $disk = config('filesystems.default');
+        $disk = 'public';
         Storage::fake($disk);
         $owner = User::factory()->create();
         $business = $this->createBusiness($owner);
