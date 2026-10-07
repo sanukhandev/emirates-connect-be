@@ -13,13 +13,13 @@ class StoryResource extends JsonResource
         return [
             'id' => $this->id,
             'body' => $this->body,
-            'media_url' => $this->media_path ? Storage::url($this->media_path) : null,
+            'media_url' => $this->media_path ? Storage::disk('public')->url($this->media_path) : null,
             'media_type' => $this->media_type,
             'expires_at' => $this->expires_at?->toISOString(),
             'user' => [
                 'id' => $this->user?->id,
                 'name' => $this->user?->profile?->display_name ?: $this->user?->name,
-                'avatar_url' => $this->user?->profile?->avatar_path ? Storage::url($this->user->profile->avatar_path) : null,
+                'avatar_url' => $this->user?->profile?->avatar_path ? Storage::disk('public')->url($this->user->profile->avatar_path) : null,
                 'is_verified' => $this->user?->profile?->verification_status?->value === 'approved',
             ],
         ];

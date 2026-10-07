@@ -20,10 +20,17 @@ class ProfileResource extends JsonResource
             'emirate' => $this->emirate?->value,
             'website_url' => $this->website_url,
             'linkedin_url' => $this->linkedin_url,
-            'avatar_url' => $this->avatar_path ? Storage::url($this->avatar_path) : null,
-            'cover_image_url' => $this->cover_image_path ? Storage::url($this->cover_image_path) : null,
+            'avatar_url' => $this->publicUrl($this->avatar_path),
+            'cover_image_url' => $this->publicUrl($this->cover_image_path),
             'onboarding_completed' => $this->onboarding_completed_at !== null,
             'is_verified' => $this->verification_status?->value === 'approved',
         ];
+    }
+
+    private function publicUrl(?string $path): ?string
+    {
+        $disk = Storage::disk('public');
+
+        return $path && $disk->exists($path) ? $disk->url($path) : null;
     }
 }
