@@ -37,7 +37,7 @@ class ProfileMediaController extends Controller
     private function replace(Request $request, string $field, $file): JsonResponse
     {
         $profile = $this->profile($request);
-        $disk = config('filesystems.default');
+        $disk = 'public';
         $kind = $field === 'avatar' ? 'avatar' : 'cover';
         $oldPath = $profile->{$kind === 'avatar' ? 'avatar_path' : 'cover_image_path'};
         $path = $file->store("profiles/{$profile->user_id}/{$kind}", ['disk' => $disk]);
@@ -53,7 +53,7 @@ class ProfileMediaController extends Controller
         $profile = $this->profile($request);
         $oldPath = $profile->{$column};
         $profile->update([$column => null]);
-        $this->deleteManagedPath($oldPath, $profile->user_id, $kind, config('filesystems.default'));
+        $this->deleteManagedPath($oldPath, $profile->user_id, $kind, 'public');
 
         return response()->noContent();
     }

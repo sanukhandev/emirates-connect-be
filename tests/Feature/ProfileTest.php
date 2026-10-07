@@ -74,7 +74,7 @@ class ProfileTest extends TestCase
 
     public function test_avatar_replacement_and_deletion_are_safe(): void
     {
-        Storage::fake(config('filesystems.default'));
+        Storage::fake('public');
         $user = User::factory()->create();
         $response = $this->actingAs($user, 'sanctum')->post('/api/v1/me/profile/avatar', [
             'avatar' => UploadedFile::fake()->create('avatar.jpg', 100, 'image/jpeg'),
@@ -84,7 +84,7 @@ class ProfileTest extends TestCase
             'avatar' => UploadedFile::fake()->create('avatar.png', 100, 'image/png'),
         ])->assertOk();
         $new = $user->refresh()->profile->avatar_path;
-        $disk = Storage::disk(config('filesystems.default'));
+        $disk = Storage::disk('public');
         $disk->assertMissing($old);
         $disk->assertExists($new);
         $this->actingAs($user, 'sanctum')->deleteJson('/api/v1/me/profile/avatar')->assertNoContent();
