@@ -23,6 +23,8 @@ use App\Http\Controllers\Api\V1\BusinessPostController;
 use App\Http\Controllers\Api\V1\CommentController;
 use App\Http\Controllers\Api\V1\CommentReactionController;
 use App\Http\Controllers\Api\V1\CommentReplyController;
+use App\Http\Controllers\Api\V1\DiscoveryController;
+use App\Http\Controllers\Api\V1\EventController;
 use App\Http\Controllers\Api\V1\FeedController;
 use App\Http\Controllers\Api\V1\MetaController;
 use App\Http\Controllers\Api\V1\MyBusinessController;
@@ -38,6 +40,7 @@ use App\Http\Controllers\Api\V1\ProfileMediaController;
 use App\Http\Controllers\Api\V1\ReelController;
 use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\SearchController;
+use App\Http\Controllers\Api\V1\StoryController;
 use App\Http\Controllers\Api\V1\UserController;
 use App\Http\Controllers\Api\V1\UserFollowController;
 use App\Http\Controllers\Api\V1\UserNetworkController;
@@ -84,6 +87,13 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/reports', [ReportController::class, 'store'])->middleware('throttle:reports');
         Route::get('/me/reports', [ReportController::class, 'mine']);
         Route::get('/feed', [FeedController::class, 'index']);
+        Route::get('/discovery', DiscoveryController::class);
+        Route::get('/events', [EventController::class, 'index']);
+        Route::post('/events/{event}/rsvp', [EventController::class, 'rsvp']);
+        Route::delete('/events/{event}/rsvp', [EventController::class, 'cancelRsvp']);
+        Route::get('/stories', [StoryController::class, 'index']);
+        Route::post('/stories', [StoryController::class, 'store']);
+        Route::delete('/stories/{story}', [StoryController::class, 'destroy']);
         Route::get('/me/profile', [ProfileController::class, 'show']);
         Route::patch('/me/profile', [ProfileController::class, 'update']);
         Route::post('/me/onboarding/complete', [OnboardingController::class, 'complete']);
@@ -113,6 +123,7 @@ Route::prefix('v1')->group(function (): void {
     });
 
     Route::middleware(['auth:sanctum', 'active.account', 'system.admin'])->prefix('admin')->group(function (): void {
+        Route::post('/events', [EventController::class, 'store']);
         Route::get('/dashboard', AdminDashboardController::class);
         Route::get('/users', [AdminUserController::class, 'index']);
         Route::get('/users/{user}', [AdminUserController::class, 'show']);
