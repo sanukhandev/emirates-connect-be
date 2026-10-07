@@ -37,7 +37,9 @@ use App\Http\Controllers\Api\V1\PostMediaController;
 use App\Http\Controllers\Api\V1\PostReactionController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ProfileMediaController;
+use App\Http\Controllers\Api\V1\ReelCommentController;
 use App\Http\Controllers\Api\V1\ReelController;
+use App\Http\Controllers\Api\V1\ReelReactionController;
 use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\SearchController;
 use App\Http\Controllers\Api\V1\StoryController;
@@ -149,6 +151,7 @@ Route::prefix('v1')->group(function (): void {
     Route::get('/reels', [ReelController::class, 'index']);
     Route::get('/reels/{reel}', [ReelController::class, 'show']);
     Route::get('/posts/{post}/comments', [PostCommentController::class, 'index']);
+    Route::get('/reels/{reel}/comments', [ReelCommentController::class, 'index']);
     Route::get('/meta/industries', [MetaController::class, 'industries']);
     Route::get('/meta/emirates', [MetaController::class, 'emirates']);
     Route::middleware('throttle:search')->group(function (): void {
@@ -167,6 +170,7 @@ Route::prefix('v1')->group(function (): void {
             Route::delete('/reels/{reel}', [ReelController::class, 'destroy']);
         });
         Route::post('/posts/{post}/comments', [PostCommentController::class, 'store']);
+        Route::post('/reels/{reel}/comments', [ReelCommentController::class, 'store']);
         Route::post('/comments/{comment}/replies', [CommentReplyController::class, 'store']);
         Route::patch('/comments/{comment}', [CommentController::class, 'update']);
         Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
@@ -176,6 +180,8 @@ Route::prefix('v1')->group(function (): void {
         Route::delete('/posts/{post}/media/{media}', [PostMediaController::class, 'destroy']);
         Route::put('/posts/{post}/reaction', [PostReactionController::class, 'update']);
         Route::delete('/posts/{post}/reaction', [PostReactionController::class, 'destroy']);
+        Route::put('/reels/{reel}/reaction', [ReelReactionController::class, 'update']);
+        Route::delete('/reels/{reel}/reaction', [ReelReactionController::class, 'destroy']);
         Route::put('/comments/{comment}/reaction', [CommentReactionController::class, 'update']);
         Route::delete('/comments/{comment}/reaction', [CommentReactionController::class, 'destroy']);
         Route::put('/users/{user}/follow', [UserFollowController::class, 'update']);

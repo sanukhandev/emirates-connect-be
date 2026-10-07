@@ -14,7 +14,8 @@ class CommentReplyController extends Controller
     public function store(CreateReplyRequest $request, Comment $comment, CommentService $service): JsonResponse
     {
         $this->authorize('reply', $comment);
-        $reply = $service->create($request->user(), $comment->post, $request->validated(), $comment);
+        $comment->loadMissing(['post', 'reel']);
+        $reply = $service->create($request->user(), $comment->post ?? $comment->reel, $request->validated(), $comment);
 
         return CommentResource::make($reply)->response()->setStatusCode(201);
     }

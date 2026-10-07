@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Enums\ReelStatus;
+use App\Support\ReactionSummary;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
@@ -32,6 +33,7 @@ class ReelResource extends JsonResource
             'published_at' => $this->published_at?->toISOString(),
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
+            'reactions' => ReactionSummary::toArray($this->resource),
         ];
     }
 }

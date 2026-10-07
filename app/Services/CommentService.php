@@ -6,6 +6,7 @@ use App\Events\CommentCreated;
 use App\Models\Business;
 use App\Models\Comment;
 use App\Models\Post;
+use App\Models\Reel;
 use App\Models\User;
 use App\Support\ReactionSummary;
 use Illuminate\Support\Facades\Gate;
@@ -13,13 +14,13 @@ use Illuminate\Validation\ValidationException;
 
 class CommentService
 {
-    public function create(User $actor, Post $post, array $data, ?Comment $parent = null): Comment
+    public function create(User $actor, Post|Reel $target, array $data, ?Comment $parent = null): Comment
     {
-        if (! app(PostVisibility::class)->isPublic($post)) {
+        if (! $this->isPublic($target)) {
             abort(404);
         }
 
-        if ($parent !== null && ($parent->post_id !== $post->id || $parent->parent_id !== null || $parent->trashed())) {
+        if ($parent !== null && (! $this->belongsTo($parent, $target) || $parent->parent_id !== null || $parent->trashed())) {
             throw ValidationException::withMessages(['parent_id' => 'Replies must target a visible top-level comment.']);
         }
 
@@ -28,7 +29,7 @@ class CommentService
             'body' => $data['body'],
             'created_by' => $actor->id,
         ]);
-        $comment->post()->associate($post);
+        $target instanceof Post ? $comment->post()->associate($target) : $comment->reel()->associate($target);
         $comment->parent()->associate($parent);
         $comment->author()->associate($author);
         $comment->save();
@@ -66,5 +67,17 @@ class CommentService
         });
 
         return $comment;
+    }
+
+    private function isPublic(Post|Reel $target): bool
+    {
+        return $target instanceof Post
+            ? app(PostVisibility::class)->isPublic($target)
+            : app(ReelVisibility::class)->isPublic($target);
+    }
+
+    private function belongsTo(Comment $comment, Post|Reel $target): bool
+    {
+        return $target instanceof Post ? $comment->post_id === $target->id : $comment->reel_id === $target->id;
     }
 }

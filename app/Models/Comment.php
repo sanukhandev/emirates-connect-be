@@ -27,6 +27,11 @@ class Comment extends Model
         return $this->belongsTo(Post::class);
     }
 
+    public function reel(): BelongsTo
+    {
+        return $this->belongsTo(Reel::class);
+    }
+
     public function author(): MorphTo
     {
         return $this->morphTo();

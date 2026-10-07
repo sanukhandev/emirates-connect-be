@@ -6,8 +6,11 @@ use App\Enums\BusinessRole;
 use App\Enums\BusinessStatus;
 use App\Models\Business;
 use App\Models\Comment;
+use App\Models\Post;
+use App\Models\Reel;
 use App\Models\User;
 use App\Services\PostVisibility;
+use App\Services\ReelVisibility;
 
 class CommentPolicy
 {
@@ -24,12 +27,12 @@ class CommentPolicy
     public function reply(User $user, Comment $comment): bool
     {
         return $comment->parent_id === null
-            && app(PostVisibility::class)->isPublic($comment->post);
+            && $this->targetIsPublic($comment);
     }
 
     private function canManage(User $user, Comment $comment): bool
     {
-        if (! app(PostVisibility::class)->isPublic($comment->post)) {
+        if (! $this->targetIsPublic($comment)) {
             return false;
         }
 
@@ -49,5 +52,14 @@ class CommentPolicy
                 BusinessRole::ADMIN->value,
                 BusinessRole::EDITOR->value,
             ])->exists();
+    }
+
+    private function targetIsPublic(Comment $comment): bool
+    {
+        $comment->loadMissing(['post', 'reel']);
+
+        return $comment->post instanceof Post
+            ? app(PostVisibility::class)->isPublic($comment->post)
+            : $comment->reel instanceof Reel && app(ReelVisibility::class)->isPublic($comment->reel);
     }
 }

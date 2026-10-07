@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Services\ReelProcessingService;
 use App\Services\ReelService;
 use App\Services\ReelVisibility;
+use App\Support\ReactionSummary;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -44,6 +45,8 @@ class ReelController extends Controller
     {
         $reel->loadMorph('author', [User::class => ['profile'], Business::class => []]);
         abort_unless($visibility->isPublic($reel) || ($request->user() && $request->user()->can('view', $reel)), Response::HTTP_NOT_FOUND);
+
+        ReactionSummary::load($reel);
 
         return ReelResource::make($reel)->response()->setStatusCode(Response::HTTP_OK);
     }
@@ -96,11 +99,15 @@ class ReelController extends Controller
 
     private function feedQuery(ReelVisibility $visibility)
     {
-        return $visibility->publicQuery()
+        $query = $visibility->publicQuery()
             ->with(['author' => function (MorphTo $morphTo): void {
                 $morphTo->morphWith([User::class => ['profile'], Business::class => []]);
             }])
             ->orderByDesc('published_at')
             ->orderByDesc('id');
+
+        ReactionSummary::apply($query);
+
+        return $query;
     }
 }
