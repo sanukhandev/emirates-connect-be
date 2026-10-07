@@ -7,10 +7,23 @@ use App\Events\ReactionCreated;
 use App\Events\UserFollowed;
 use App\Events\VerificationReviewed;
 use App\Services\NotificationService;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
 
-class CreateNotification
+class CreateNotification implements ShouldQueue
 {
-    public function __construct(private readonly NotificationService $notifications) {}
+    use InteractsWithQueue, Queueable;
+
+    public int $tries = 3;
+
+    public array $backoff = [5, 30, 120];
+
+    public function __construct(private readonly NotificationService $notifications)
+    {
+        $this->afterCommit = true;
+        $this->onQueue('notifications');
+    }
 
     public function follow(UserFollowed $event): void
     {
